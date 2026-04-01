@@ -1,0 +1,732 @@
+{% extends 'users/userbase.html' %}
+{% load static %}
+
+{% block page_title %}Training Results{% endblock %}
+
+{% block contents %}
+<style>
+    .training-section {
+        background: #f0ebe0;
+        min-height: calc(100vh - 175px);
+        padding: 2.5rem 2rem;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- PAGE BANNER ---- */
+    .page-banner {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3d 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(196,151,58,0.22);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        position: relative;
+        overflow: hidden;
+        animation: fadeUp 0.6s ease both;
+    }
+
+    .page-banner::before {
+        content: '📊';
+        position: absolute;
+        font-size: 10rem;
+        opacity: 0.04;
+        right: 1.5rem; top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .banner-left .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.25);
+        color: #e8b84b;
+        font-size: 0.67rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 4px 13px;
+        border-radius: 20px;
+        margin-bottom: 0.6rem;
+    }
+
+    .banner-left h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem;
+        font-weight: 300;
+        color: #f5f0e8;
+        margin: 0 0 0.3rem;
+        line-height: 1.2;
+    }
+
+    .banner-left h2 em { font-style: italic; color: #e8b84b; }
+
+    .banner-left p {
+        color: #a8c5b0;
+        font-size: 0.82rem;
+        font-weight: 300;
+        margin: 0;
+    }
+
+    .banner-chips {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+    }
+
+    .data-chip {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(168,197,176,0.2);
+        border-radius: 14px;
+        padding: 0.65rem 1.2rem;
+        text-align: center;
+    }
+
+    .data-chip .num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: #e8b84b;
+        line-height: 1;
+        display: block;
+    }
+
+    .data-chip .lbl {
+        font-size: 0.63rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #a8c5b0;
+        display: block;
+        margin-top: 2px;
+    }
+
+    /* ---- SECTION TITLE ---- */
+    .dash-section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dash-section-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(196,151,58,0.2);
+    }
+
+    /* ---- COMPARISON OVERVIEW ---- */
+    .comparison-strip {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid rgba(196,151,58,0.13);
+        box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .comp-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .comp-row:last-child { border-bottom: none; }
+
+    .comp-label {
+        width: 140px;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6b8070;
+        font-weight: 500;
+        flex-shrink: 0;
+    }
+
+    .comp-bars {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .comp-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .comp-bar-tag {
+        width: 72px;
+        font-size: 0.68rem;
+        color: #9aaf9e;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .comp-bar {
+        flex: 1;
+        height: 8px;
+        background: #eee;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .comp-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1.2s ease;
+    }
+
+    .bar-cnn     { background: linear-gradient(90deg, #c4973a, #e8b84b); }
+    .bar-mob     { background: linear-gradient(90deg, #2d5a3d, #4a7c5f); }
+    .bar-loss-cnn{ background: linear-gradient(90deg, #c0392b, #e67e22); }
+    .bar-loss-mob{ background: linear-gradient(90deg, #1a6b5a, #2d9e85); }
+
+    .comp-val {
+        width: 42px;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .val-gold  { color: #c4973a; }
+    .val-green { color: #2d5a3d; }
+    .val-red   { color: #c0392b; }
+    .val-teal  { color: #1a6b5a; }
+
+    /* ---- MODEL CARDS ---- */
+    .model-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid rgba(196,151,58,0.13);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        height: 100%;
+        transition: all 0.3s ease;
+        animation: fadeUp 0.6s ease both;
+    }
+
+    .model-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 50px rgba(26,58,42,0.12);
+    }
+
+    .model-card:nth-child(1) { animation-delay: 0.15s; }
+    .model-card:nth-child(2) { animation-delay: 0.25s; }
+
+    /* Card header */
+    .model-card-header {
+        padding: 1.6rem 1.8rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .model-card-header.cnn-header {
+        background: linear-gradient(135deg, #2c1a0d, #5c3a1e);
+    }
+
+    .model-card-header.mob-header {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+    }
+
+    .model-card-header::before {
+        content: attr(data-emoji);
+        position: absolute;
+        font-size: 8rem;
+        opacity: 0.05;
+        right: -1rem; bottom: -1.5rem;
+        pointer-events: none;
+    }
+
+    .model-badge-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .model-type-badge {
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #a8c5b0;
+        background: rgba(255,255,255,0.07);
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+
+    .best-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(196,151,58,0.2);
+        border: 1px solid rgba(196,151,58,0.4);
+        color: #e8b84b;
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+
+    .model-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.7rem;
+        font-weight: 600;
+        color: #e8b84b;
+        margin-bottom: 0.2rem;
+    }
+
+    .model-full-name {
+        font-size: 0.75rem;
+        color: rgba(168,197,176,0.65);
+        font-weight: 300;
+    }
+
+    /* Card body */
+    .model-card-body { padding: 1.5rem 1.8rem; }
+
+    .metric-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .metric-item:last-child { border-bottom: none; }
+
+    .metric-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.45rem;
+    }
+
+    .metric-name {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6b8070;
+        font-weight: 500;
+    }
+
+    .metric-value {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .metric-bar {
+        height: 6px;
+        background: #eee;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .metric-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+    }
+
+    /* Graph section */
+    .graph-section {
+        padding: 0 1.8rem 1.8rem;
+    }
+
+    .graph-label {
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #6b8070;
+        font-weight: 500;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .graph-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(0,0,0,0.07);
+    }
+
+    .graph-img-wrap {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(196,151,58,0.15);
+        background: #faf7f0;
+    }
+
+    .graph-img-wrap img {
+        width: 100%;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .graph-img-wrap:hover img { transform: scale(1.02); }
+
+    .graph-placeholder {
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #faf7f0;
+        color: #b5c8bc;
+        font-size: 0.8rem;
+        gap: 8px;
+    }
+
+    /* ---- WINNER STRIP ---- */
+    .winner-strip {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        border: 1px solid rgba(196,151,58,0.25);
+        margin-top: 2rem;
+        animation: fadeUp 0.6s 0.35s ease both;
+    }
+
+    .winner-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .winner-trophy {
+        font-size: 2.2rem;
+    }
+
+    .winner-text .title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        color: #f5f0e8;
+        font-weight: 400;
+    }
+
+    .winner-text .title em { color: #e8b84b; font-style: italic; }
+
+    .winner-text .sub {
+        font-size: 0.76rem;
+        color: #a8c5b0;
+        font-weight: 300;
+        margin-top: 2px;
+    }
+
+    .winner-stats {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .winner-stat .num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #e8b84b;
+        line-height: 1;
+        display: block;
+    }
+
+    .winner-stat .lbl {
+        font-size: 0.62rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #a8c5b0;
+    }
+
+    @media (max-width: 768px) {
+        .training-section { padding: 1.5rem 1rem; }
+        .comp-label       { width: 90px; font-size: 0.65rem; }
+        .page-banner      { padding: 1.5rem; }
+        .banner-left h2   { font-size: 1.45rem; }
+    }
+</style>
+
+<div class="training-section">
+    <div class="container-fluid px-0">
+
+        <!-- PAGE BANNER -->
+        <div class="page-banner mb-4">
+            <div class="banner-left">
+                <div class="eyebrow">
+                    <i class="fas fa-chart-line" style="font-size:0.6rem;"></i>
+                    Model Training Results
+                </div>
+                <h2>Training <em>Analysis</em></h2>
+                <p>CNN vs MobileNet V2 — accuracy, loss, and performance graphs.</p>
+            </div>
+            <div class="banner-chips">
+                <div class="data-chip">
+                    <span class="num">{{ train_count }}</span>
+                    <span class="lbl">Train Images</span>
+                </div>
+                <div class="data-chip">
+                    <span class="num">{{ test_count }}</span>
+                    <span class="lbl">Test Images</span>
+                </div>
+                <div class="data-chip">
+                    <span class="num">81</span>
+                    <span class="lbl">Classes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUICK COMPARISON -->
+        <div class="dash-section-title mb-3">
+            <span>⚡</span> Quick Comparison
+        </div>
+
+        <div class="comparison-strip mb-4">
+            <div class="comp-row">
+                <div class="comp-label">Accuracy</div>
+                <div class="comp-bars">
+                    <div class="comp-bar-row">
+                        <div class="comp-bar-tag">CNN</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill bar-cnn" style="width:{{ cnn_acc }}%;"></div>
+                        </div>
+                        <div class="comp-val val-gold">{{ cnn_acc }}%</div>
+                    </div>
+                    <div class="comp-bar-row">
+                        <div class="comp-bar-tag">MobileNet</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill bar-mob" style="width:{{ mob_acc }}%;"></div>
+                        </div>
+                        <div class="comp-val val-green">{{ mob_acc }}%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comp-row">
+                <div class="comp-label">Loss</div>
+                <div class="comp-bars">
+                    <div class="comp-bar-row">
+                        <div class="comp-bar-tag">CNN</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill bar-loss-cnn" style="width:56%;"></div>
+                        </div>
+                        <div class="comp-val val-red">{{ cnn_loss }}</div>
+                    </div>
+                    <div class="comp-bar-row">
+                        <div class="comp-bar-tag">MobileNet</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill bar-loss-mob" style="width:20%;"></div>
+                        </div>
+                        <div class="comp-val val-teal">{{ mob_loss }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comp-row">
+                <div class="comp-label">Val Accuracy</div>
+                <div class="comp-bars">
+                    <div class="comp-bar-row">
+                        <div class="comp-bar-tag">CNN</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill bar-cnn" style="width:{{ cnn_val_acc }}%;"></div>
+                        </div>
+                        <div class="comp-val val-gold">{{ cnn_val_acc }}%</div>
+                    </div>
+                    <div class="comp-bar-row">
+                        <div class="comp-bar-tag">MobileNet</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill bar-mob" style="width:{{ mob_val_acc }}%;"></div>
+                        </div>
+                        <div class="comp-val val-green">{{ mob_val_acc }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODEL CARDS -->
+        <div class="dash-section-title mb-3">
+            <span>🧠</span> Model Details & Graphs
+        </div>
+
+        <div class="row g-4 mb-2">
+
+            <!-- CNN CARD -->
+            <div class="col-lg-6">
+                <div class="model-card">
+                    <div class="model-card-header cnn-header" data-emoji="🧠">
+                        <div class="model-badge-row">
+                            <span class="model-type-badge">Baseline Model</span>
+                        </div>
+                        <div class="model-name">CNN</div>
+                        <div class="model-full-name">Custom Convolutional Neural Network</div>
+                    </div>
+
+                    <div class="model-card-body">
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">Training Accuracy</span>
+                                <span class="metric-value val-gold">{{ cnn_acc }}%</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill bar-cnn" style="width:{{ cnn_acc }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">Validation Accuracy</span>
+                                <span class="metric-value val-gold">{{ cnn_val_acc }}%</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill bar-cnn" style="width:{{ cnn_val_acc }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">Training Loss</span>
+                                <span class="metric-value val-red">{{ cnn_loss }}</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill bar-loss-cnn" style="width:56%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">Validation Loss</span>
+                                <span class="metric-value val-red">{{ cnn_val_loss }}</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill bar-loss-cnn" style="width:56%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="graph-section">
+                        <div class="graph-label">Training Graph</div>
+                        <div class="graph-img-wrap">
+                            {% if cnn_graph %}
+                                <img src="{{ cnn_graph }}" alt="CNN Training Graph">
+                            {% else %}
+                                <div class="graph-placeholder">
+                                    <span style="font-size:2rem;">📉</span>
+                                    <span>CNN graph not available</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOBILENET CARD -->
+            <div class="col-lg-6">
+                <div class="model-card" style="border-color:rgba(196,151,58,0.28);">
+                    <div class="model-card-header mob-header" data-emoji="⚡">
+                        <div class="model-badge-row">
+                            <span class="model-type-badge">Transfer Learning</span>
+                            <span class="best-badge">✦ Best Model</span>
+                        </div>
+                        <div class="model-name">MobileNet V2</div>
+                        <div class="model-full-name">ImageNet Pre-trained · Fine-tuned on Herb Leaves</div>
+                    </div>
+
+                    <div class="model-card-body">
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">Training Accuracy</span>
+                                <span class="metric-value val-green">{{ mob_acc }}%</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill bar-mob" style="width:{{ mob_acc }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">Validation Accuracy</span>
+                                <span class="metric-value val-green">{{ mob_val_acc }}%</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill bar-mob" style="width:{{ mob_val_acc }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">Training Loss</span>
+                                <span class="metric-value val-teal">{{ mob_loss }}</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill bar-loss-mob" style="width:20%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-name">Validation Loss</span>
+                                <span class="metric-value val-teal">{{ mob_val_loss }}</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill bar-loss-mob" style="width:20%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="graph-section">
+                        <div class="graph-label">Training Graph</div>
+                        <div class="graph-img-wrap">
+                            {% if mob_graph %}
+                                <img src="{{ mob_graph }}" alt="MobileNet Training Graph">
+                            {% else %}
+                                <div class="graph-placeholder">
+                                    <span style="font-size:2rem;">📈</span>
+                                    <span>MobileNet graph not available</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WINNER STRIP -->
+        <div class="winner-strip">
+            <div class="winner-left">
+                <div class="winner-trophy">🏆</div>
+                <div class="winner-text">
+                    <div class="title"><em>MobileNet V2</em> wins — best performing model</div>
+                    <div class="sub">Transfer learning on ImageNet weights outperforms the custom CNN by 20% accuracy with significantly lower loss.</div>
+                </div>
+            </div>
+            <div class="winner-stats">
+                <div class="winner-stat">
+                    <span class="num">{{ mob_acc }}%</span>
+                    <span class="lbl">Accuracy</span>
+                </div>
+                <div class="winner-stat">
+                    <span class="num">{{ mob_loss }}</span>
+                    <span class="lbl">Loss</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

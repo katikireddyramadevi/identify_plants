@@ -1,0 +1,873 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+
+<style>
+    /* ============ HERO ============ */
+    .hero {
+        min-height: 100vh;
+        background:
+            radial-gradient(ellipse at 20% 50%, rgba(45,90,61,0.18) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 20%, rgba(196,151,58,0.10) 0%, transparent 50%),
+            linear-gradient(160deg, #0d2218 0%, #1a3a2a 40%, #0f2619 100%);
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        padding: 80px 0 60px;
+    }
+
+    /* Floating botanical orbs */
+    .hero::before {
+        content: '';
+        position: absolute;
+        width: 600px; height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(74,124,95,0.12) 0%, transparent 70%);
+        top: -100px; right: -100px;
+        pointer-events: none;
+    }
+
+    .hero::after {
+        content: '';
+        position: absolute;
+        width: 400px; height: 400px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(196,151,58,0.08) 0%, transparent 70%);
+        bottom: -80px; left: 10%;
+        pointer-events: none;
+    }
+
+    /* Leaf background decorations */
+    .hero-leaf {
+        position: absolute;
+        font-size: 120px;
+        opacity: 0.04;
+        pointer-events: none;
+        animation: float 8s ease-in-out infinite;
+    }
+    .hero-leaf:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; font-size: 160px; }
+    .hero-leaf:nth-child(2) { top: 60%; right: 5%; animation-delay: 2s; font-size: 100px; }
+    .hero-leaf:nth-child(3) { bottom: 10%; left: 35%; animation-delay: 4s; font-size: 80px; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.3);
+        color: #e8b84b;
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+        animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+        font-weight: 300;
+        color: #f5f0e8;
+        line-height: 1.15;
+        margin-bottom: 1.5rem;
+        animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-title em {
+        font-style: italic;
+        color: #e8b84b;
+    }
+
+    .hero-title .hero-title-line2 {
+        color: #a8c5b0;
+        font-size: 75%;
+    }
+
+    .hero-desc {
+        color: #a8c5b0;
+        font-size: 1rem;
+        line-height: 1.75;
+        max-width: 500px;
+        margin-bottom: 2.5rem;
+        font-weight: 300;
+        animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .hero-btns {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    /* Hero right panel - plant showcase */
+    .hero-visual {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .plant-card-showcase {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(196,151,58,0.2);
+        border-radius: 24px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        width: 100%;
+        max-width: 380px;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    }
+
+    .plant-card-showcase .scan-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(74,124,95,0.2);
+        border: 1px solid rgba(74,124,95,0.4);
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .scan-badge .pulse {
+        width: 10px; height: 10px;
+        background: #4a7c5f;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(74,124,95,0.7); }
+        50% { opacity: 0.8; transform: scale(1.1); box-shadow: 0 0 0 6px rgba(74,124,95,0); }
+    }
+
+    .scan-badge span {
+        color: #6b9e7e;
+        font-size: 0.78rem;
+        letter-spacing: 0.05em;
+        font-weight: 500;
+    }
+
+    .plant-emoji-display {
+        font-size: 5rem;
+        text-align: center;
+        margin: 1rem 0;
+        animation: float 4s ease-in-out infinite;
+    }
+
+    .plant-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255,255,255,0.04);
+        border-radius: 10px;
+        padding: 0.7rem 1rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .plant-info-row .label {
+        color: #6b9e7e;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .plant-info-row .value {
+        color: #e8b84b;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .confidence-bar-wrap {
+        margin-top: 1.2rem;
+    }
+
+    .confidence-bar-wrap .label {
+        display: flex;
+        justify-content: space-between;
+        color: #6b9e7e;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .confidence-bar-wrap .label span:last-child {
+        color: #e8b84b;
+    }
+
+    .conf-bar {
+        height: 6px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .conf-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4a7c5f, #e8b84b);
+        border-radius: 3px;
+        width: 89%;
+        animation: growBar 1.5s 0.8s ease both;
+        transform-origin: left;
+    }
+
+    @keyframes growBar {
+        from { width: 0; }
+        to { width: 89%; }
+    }
+
+    /* ============ STATS STRIP ============ */
+    .stats-strip {
+        background: var(--parchment, #ede5d0);
+        border-top: 2px solid rgba(196,151,58,0.2);
+        border-bottom: 2px solid rgba(196,151,58,0.2);
+        padding: 2.5rem 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .stat-number {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 600;
+        color: var(--moss, #2d5a3d);
+        line-height: 1;
+        margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--sage, #4a7c5f);
+        font-weight: 500;
+    }
+
+    .stat-divider {
+        width: 1px;
+        background: rgba(196,151,58,0.3);
+        height: 50px;
+        align-self: center;
+    }
+
+    /* ============ HOW IT WORKS ============ */
+    .section-how {
+        padding: 6rem 0;
+        background: #f5f0e8;
+    }
+
+    .section-label {
+        display: inline-block;
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--gold, #c4973a);
+        font-weight: 500;
+        margin-bottom: 0.8rem;
+    }
+
+    .section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 300;
+        color: var(--forest, #1a3a2a);
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .section-title em {
+        font-style: italic;
+        color: var(--sage, #4a7c5f);
+    }
+
+    .step-card {
+        background: white;
+        border: 1px solid rgba(196,151,58,0.15);
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .step-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 50px rgba(26,58,42,0.12);
+        border-color: rgba(196,151,58,0.4);
+    }
+
+    .step-number {
+        position: absolute;
+        top: -14px; left: 50%;
+        transform: translateX(-50%);
+        background: var(--forest, #1a3a2a);
+        color: var(--amber, #e8b84b);
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        padding: 4px 14px;
+        border-radius: 20px;
+    }
+
+    .step-icon {
+        font-size: 3rem;
+        margin: 1rem 0;
+        display: block;
+    }
+
+    .step-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: var(--forest, #1a3a2a);
+        margin-bottom: 0.5rem;
+    }
+
+    .step-desc {
+        font-size: 0.85rem;
+        color: #6b8070;
+        line-height: 1.65;
+        font-weight: 300;
+    }
+
+    .steps-row {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+    }
+
+    .step-wrap {
+        flex: 1;
+    }
+
+    .step-arrow-sep {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold, #c4973a);
+        font-size: 1.6rem;
+        opacity: 0.45;
+        padding: 0 0.75rem;
+        flex-shrink: 0;
+        padding-top: 2rem; /* optical alignment with card center */
+    }
+
+    @media (max-width: 768px) {
+        .steps-row {
+            flex-direction: column;
+        }
+        .step-arrow-sep {
+            transform: rotate(90deg);
+            padding: 0;
+            margin: 0.5rem auto;
+        }
+    }
+
+    
+
+    /* ============ PLANT SHOWCASE ============ */
+    .section-plants {
+        padding: 6rem 0;
+        background: linear-gradient(180deg, #0f2619 0%, #1a3a2a 100%);
+    }
+
+    .section-plants .section-title,
+    .section-plants .section-label {
+        color: #a8c5b0 !important;
+    }
+
+    .section-plants .section-title em { color: #e8b84b; }
+
+    .plant-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(168,197,176,0.2);
+        border-radius: 40px;
+        padding: 8px 18px;
+        color: #a8c5b0;
+        font-size: 0.82rem;
+        margin: 5px;
+        transition: all 0.3s ease;
+        cursor: default;
+    }
+
+    .plant-chip:hover {
+        background: rgba(196,151,58,0.15);
+        border-color: rgba(196,151,58,0.4);
+        color: #e8b84b;
+        transform: translateY(-2px);
+    }
+
+    .plant-chip .dot {
+        width: 6px; height: 6px;
+        background: #4a7c5f;
+        border-radius: 50%;
+    }
+
+    /* ============ MODEL CARDS ============ */
+    .section-models {
+        padding: 6rem 0;
+        background: #f5f0e8;
+    }
+
+    .model-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid rgba(196,151,58,0.15);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .model-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 24px 60px rgba(26,58,42,0.12);
+    }
+
+    .model-card-header {
+        padding: 2rem;
+        background: linear-gradient(135deg, var(--forest, #1a3a2a), var(--moss, #2d5a3d));
+        color: white;
+    }
+
+    .model-card-header .model-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.8rem;
+        display: block;
+    }
+
+    .model-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: var(--amber, #e8b84b);
+    }
+
+    .model-badge {
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #a8c5b0;
+        font-weight: 300;
+    }
+
+    .model-card-body {
+        padding: 2rem;
+    }
+
+    .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .metric-row:last-child { border-bottom: none; }
+
+    .metric-name {
+        font-size: 0.8rem;
+        color: #6b8070;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .metric-value {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--moss, #2d5a3d);
+    }
+
+    .metric-bar {
+        height: 4px;
+        background: #eee;
+        border-radius: 2px;
+        margin-top: 0.4rem;
+        overflow: hidden;
+    }
+
+    .metric-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        background: linear-gradient(90deg, var(--sage, #4a7c5f), var(--gold, #c4973a));
+    }
+
+    /* ============ CTA ============ */
+    .section-cta {
+        padding: 7rem 0;
+        background: linear-gradient(135deg, #0d2218 0%, #1a3a2a 100%);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .section-cta::before {
+        content: '🌿';
+        position: absolute;
+        font-size: 25rem;
+        opacity: 0.03;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+
+    .cta-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2.2rem, 4vw, 3.5rem);
+        font-weight: 300;
+        color: #f5f0e8;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .cta-title em { color: #e8b84b; font-style: italic; }
+
+    .cta-sub {
+        color: #a8c5b0;
+        font-size: 1rem;
+        margin-bottom: 2.5rem;
+        font-weight: 300;
+        position: relative;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+    <span class="hero-leaf">🌿</span>
+    <span class="hero-leaf">🍃</span>
+    <span class="hero-leaf">🌱</span>
+
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 hero-content">
+                <div class="hero-eyebrow">
+                    <span class="pulse" style="width:8px;height:8px;background:#4a7c5f;border-radius:50%;animation:pulse 2s infinite;display:inline-block;"></span>
+                    Deep Learning · 81 Plant Species · 89% Accuracy
+                </div>
+
+                <h1 class="hero-title">
+                    <em>Identifying</em> Herbal<br>
+                    Plants &amp; Their<br>
+                    <span class="hero-title-line2">Medicinal Properties</span>
+                </h1>
+
+                <p class="hero-desc">
+                    Upload a leaf image and let our MobileNet-powered AI instantly identify the plant and reveal its traditional medicinal properties — bridging ancient botanical wisdom with modern deep learning.
+                </p>
+
+                <div class="hero-btns">
+                    <a href="{% url 'UserLogin' %}" class="btn-herbal">
+                        <i class="fas fa-leaf me-2"></i>Try Prediction
+                    </a>
+                    <a href="{% url 'UserRegisterForm' %}" class="btn-herbal-outline" style="color:#a8c5b0;border-color:rgba(168,197,176,0.4);">
+                        Create Account
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-6 hero-visual">
+                <div class="plant-card-showcase">
+                    <div class="scan-badge">
+                        <div class="pulse"></div>
+                        <span>AI Model Active · Ready to Identify</span>
+                    </div>
+
+                    <div class="plant-emoji-display">🌿</div>
+
+                    <div class="plant-info-row">
+                        <span class="label">Identified Plant</span>
+                        <span class="value">Tulsi (Holy Basil)</span>
+                    </div>
+                    <div class="plant-info-row">
+                        <span class="label">Family</span>
+                        <span class="value">Lamiaceae</span>
+                    </div>
+                    <div class="plant-info-row">
+                        <span class="label">Properties</span>
+                        <span class="value" style="font-size:0.82rem;">Antibacterial · Immunity</span>
+                    </div>
+
+                    <div class="confidence-bar-wrap">
+                        <div class="label"><span>Confidence</span><span>89%</span></div>
+                        <div class="conf-bar"><div class="conf-bar-fill"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== STATS ===================== -->
+<section class="stats-strip">
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">81</div>
+                    <div class="stat-label">Plant Species</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-auto d-none d-md-block">
+                <div class="stat-divider"></div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">89%</div>
+                    <div class="stat-label">MobileNet Accuracy</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-auto d-none d-md-block">
+                <div class="stat-divider"></div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">1.2K+</div>
+                    <div class="stat-label">Training Images</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-auto d-none d-md-block">
+                <div class="stat-divider"></div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">DL Models (CNN + MobileNet)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section class="section-how reveal">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-label">✦ Simple Process</span>
+            <h2 class="section-title">How <em>HerbalVision</em> Works</h2>
+            <p style="color:#6b8070;max-width:520px;margin:0 auto;font-size:0.9rem;font-weight:300;line-height:1.7;">
+                Three simple steps to identify any medicinal herb leaf and unlock its healing properties.
+            </p>
+        </div>
+
+        <div class="steps-row">
+            <div class="step-wrap">
+                <div class="step-card">
+                    <div class="step-number">Step 01</div>
+                    <span class="step-icon">📸</span>
+                    <div class="step-title">Upload Leaf Image</div>
+                    <p class="step-desc">Take a clear photo of the plant leaf and upload it directly into the system. JPG, PNG formats accepted.</p>
+                </div>
+            </div>
+            <div class="step-arrow-sep">→</div>
+            <div class="step-wrap">
+                <div class="step-card">
+                    <div class="step-number">Step 02</div>
+                    <span class="step-icon">🤖</span>
+                    <div class="step-title">AI Analysis</div>
+                    <p class="step-desc">Our MobileNet deep learning model processes the image at 224×224 resolution, extracting visual features with 89% accuracy.</p>
+                </div>
+            </div>
+            <div class="step-arrow-sep">→</div>
+            <div class="step-wrap">
+                <div class="step-card">
+                    <div class="step-number">Step 03</div>
+                    <span class="step-icon">🌿</span>
+                    <div class="step-title">Get Results</div>
+                    <p class="step-desc">Instantly receive the plant name, confidence score, and detailed medicinal properties based on traditional Ayurvedic knowledge.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== PLANT CHIPS ===================== -->
+<section class="section-plants reveal">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-label" style="color:#6b9e7e;">✦ Supported Species</span>
+            <h2 class="section-title">81 Medicinal Plants <em>Recognized</em></h2>
+            <p style="color:#6b9e7e;max-width:520px;margin:0 auto;font-size:0.9rem;font-weight:300;line-height:1.7;">
+                From Tulsi and Neem to Sandalwood and Pomegranate — a rich library of Indian medicinal flora.
+            </p>
+        </div>
+
+        <div class="text-center">
+            <span class="plant-chip"><span class="dot"></span>Aloevera</span>
+            <span class="plant-chip"><span class="dot"></span>Amla</span>
+            <span class="plant-chip"><span class="dot"></span>Tulsi</span>
+            <span class="plant-chip"><span class="dot"></span>Neem</span>
+            <span class="plant-chip"><span class="dot"></span>Turmeric</span>
+            <span class="plant-chip"><span class="dot"></span>Ginger</span>
+            <span class="plant-chip"><span class="dot"></span>Hibiscus</span>
+            <span class="plant-chip"><span class="dot"></span>Mint</span>
+            <span class="plant-chip"><span class="dot"></span>Curry</span>
+            <span class="plant-chip"><span class="dot"></span>Lemon</span>
+            <span class="plant-chip"><span class="dot"></span>Guava</span>
+            <span class="plant-chip"><span class="dot"></span>Mango</span>
+            <span class="plant-chip"><span class="dot"></span>Jasmine</span>
+            <span class="plant-chip"><span class="dot"></span>Papaya</span>
+            <span class="plant-chip"><span class="dot"></span>Tamarind</span>
+            <span class="plant-chip"><span class="dot"></span>Coriander</span>
+            <span class="plant-chip"><span class="dot"></span>Drumstick</span>
+            <span class="plant-chip"><span class="dot"></span>Rose</span>
+            <span class="plant-chip"><span class="dot"></span>Jackfruit</span>
+            <span class="plant-chip"><span class="dot"></span>Betel</span>
+            <span class="plant-chip"><span class="dot"></span>Eucalyptus</span>
+            <span class="plant-chip"><span class="dot"></span>Camphor</span>
+            <span class="plant-chip"><span class="dot"></span>Bamboo</span>
+            <span class="plant-chip"><span class="dot"></span>Pomegranate</span>
+            <span class="plant-chip"><span class="dot"></span>Pepper</span>
+            <span class="plant-chip"><span class="dot"></span>Lemongrass</span>
+            <span class="plant-chip"><span class="dot"></span>Marigold</span>
+            <span class="plant-chip"><span class="dot"></span>Parijatha</span>
+            <span class="plant-chip"><span class="dot"></span>Ashoka</span>
+            <span class="plant-chip"><span class="dot"></span>+ 51 more species</span>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'UserLogin' %}" class="btn-herbal">
+                <i class="fas fa-microscope me-2"></i>Identify a Plant Now
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== MODELS ===================== -->
+<section class="section-models reveal">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-label">✦ Deep Learning Models</span>
+            <h2 class="section-title">Two Models, <em>Compared</em></h2>
+            <p style="color:#6b8070;max-width:520px;margin:0 auto;font-size:0.9rem;font-weight:300;line-height:1.7;">
+                We trained both CNN and MobileNet architectures. See how they performed.
+            </p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <!-- CNN -->
+            <div class="col-md-5">
+                <div class="model-card">
+                    <div class="model-card-header">
+                        <span class="model-icon">🧠</span>
+                        <div class="model-name">CNN</div>
+                        <div class="model-badge">Convolutional Neural Network · Baseline Model</div>
+                    </div>
+                    <div class="model-card-body">
+                        <div class="metric-row">
+                            <span class="metric-name">Accuracy</span>
+                            <span class="metric-value">69%</span>
+                        </div>
+                        <div class="metric-bar"><div class="metric-bar-fill" style="width:69%"></div></div>
+                        <div class="metric-row mt-3">
+                            <span class="metric-name">Loss</span>
+                            <span class="metric-value">1.12</span>
+                        </div>
+                        <div class="metric-bar"><div class="metric-bar-fill" style="width:45%;background:linear-gradient(90deg,#c0392b,#e67e22)"></div></div>
+                        <p style="font-size:0.8rem;color:#6b8070;margin-top:1.2rem;font-weight:300;line-height:1.6;">
+                            Custom CNN trained from scratch on leaf images. Good baseline, but limited by dataset size.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MobileNet -->
+            <div class="col-md-5">
+                <div class="model-card" style="border-color:rgba(196,151,58,0.35);">
+                    <div class="model-card-header" style="background:linear-gradient(135deg,#1a3a2a,#4a7c5f);">
+                        <span class="model-icon">⚡</span>
+                        <div class="model-name">MobileNet V2</div>
+                        <div class="model-badge">Transfer Learning · Best Model ✦</div>
+                    </div>
+                    <div class="model-card-body">
+                        <div class="metric-row">
+                            <span class="metric-name">Accuracy</span>
+                            <span class="metric-value" style="color:#2d5a3d;">89%</span>
+                        </div>
+                        <div class="metric-bar"><div class="metric-bar-fill" style="width:89%"></div></div>
+                        <div class="metric-row mt-3">
+                            <span class="metric-name">Loss</span>
+                            <span class="metric-value" style="color:#2d5a3d;">0.52</span>
+                        </div>
+                        <div class="metric-bar"><div class="metric-bar-fill" style="width:20%"></div></div>
+                        <p style="font-size:0.8rem;color:#6b8070;margin-top:1.2rem;font-weight:300;line-height:1.6;">
+                            Transfer learning on ImageNet weights, fine-tuned for Indian medicinal plants. Superior accuracy and efficiency.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== CTA ===================== -->
+<section class="section-cta reveal">
+    <div class="container">
+        <h2 class="cta-title">Ready to Identify a <em>Medicinal Plant?</em></h2>
+        <p class="cta-sub">Create a free account and start exploring the healing world of herbs.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;">
+            <a href="{% url 'UserRegisterForm' %}" class="btn-herbal">
+                <i class="fas fa-user-plus me-2"></i>Get Started Free
+            </a>
+            <a href="{% url 'UserLogin' %}" class="btn-herbal-outline" style="color:#a8c5b0;border-color:rgba(168,197,176,0.4);">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+{% endblock %}

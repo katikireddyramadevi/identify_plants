@@ -1,0 +1,658 @@
+{% extends 'admins/adminbase.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block contents %}
+<style>
+    .admin-home {
+        background: #f0ebe0;
+        min-height: calc(100vh - 175px);
+        padding: 2.5rem 2rem;
+    }
+
+    /* ---- WELCOME BANNER ---- */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3d 60%, #1a3a2a 100%);
+        border-radius: 20px;
+        padding: 2.2rem 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(196,151,58,0.25);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    .welcome-banner::before {
+        content: '🌿';
+        position: absolute;
+        font-size: 11rem;
+        opacity: 0.05;
+        right: 1rem; top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .welcome-left .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.25);
+        color: #e8b84b;
+        font-size: 0.67rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 0.7rem;
+    }
+
+    .welcome-left h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: #f5f0e8;
+        line-height: 1.2;
+        margin: 0 0 0.4rem;
+    }
+
+    .welcome-left h1 em {
+        font-style: italic;
+        color: #e8b84b;
+    }
+
+    .welcome-left p {
+        color: #a8c5b0;
+        font-size: 0.84rem;
+        font-weight: 300;
+        margin: 0;
+    }
+
+    .welcome-right {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-dash {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0.65rem 1.4rem;
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-dash-primary {
+        background: linear-gradient(135deg, #c4973a, #e8b84b);
+        color: #1a3a2a;
+    }
+
+    .btn-dash-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(196,151,58,0.4);
+        color: #1a3a2a;
+    }
+
+    .btn-dash-outline {
+        background: transparent;
+        color: #a8c5b0;
+        border: 1px solid rgba(168,197,176,0.3);
+    }
+
+    .btn-dash-outline:hover {
+        background: rgba(168,197,176,0.08);
+        border-color: rgba(168,197,176,0.5);
+        color: #f5f0e8;
+        transform: translateY(-2px);
+    }
+
+    /* ---- STAT CARDS ---- */
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem 1.75rem;
+        border: 1px solid rgba(196,151,58,0.12);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(26,58,42,0.1);
+        border-color: rgba(196,151,58,0.3);
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: 0 0 16px 16px;
+    }
+
+    .stat-card.green::after  { background: linear-gradient(90deg, #2d5a3d, #4a7c5f); }
+    .stat-card.gold::after   { background: linear-gradient(90deg, #c4973a, #e8b84b); }
+    .stat-card.teal::after   { background: linear-gradient(90deg, #1a6b5a, #2d9e85); }
+    .stat-card.amber::after  { background: linear-gradient(90deg, #8b5e00, #c4973a); }
+
+    .stat-icon {
+        width: 46px; height: 46px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.green  { background: rgba(45,90,61,0.1);  }
+    .stat-icon.gold   { background: rgba(196,151,58,0.1);}
+    .stat-icon.teal   { background: rgba(26,107,90,0.1); }
+    .stat-icon.amber  { background: rgba(139,94,0,0.1);  }
+
+    .stat-number {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.4rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        line-height: 1;
+        margin-bottom: 0.2rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6b8070;
+        font-weight: 500;
+        margin-bottom: 0.6rem;
+    }
+
+    .stat-sub {
+        font-size: 0.75rem;
+        color: #9aaf9e;
+        font-weight: 300;
+    }
+
+    /* ---- SECTION TITLE ---- */
+    .dash-section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dash-section-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(196,151,58,0.2);
+    }
+
+    .dash-section-title .title-icon {
+        font-size: 1rem;
+    }
+
+    /* ---- QUICK ACTION CARDS ---- */
+    .action-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.75rem;
+        border: 1px solid rgba(196,151,58,0.12);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        height: 100%;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 40px rgba(26,58,42,0.12);
+        border-color: rgba(196,151,58,0.35);
+        text-decoration: none;
+    }
+
+    .action-icon {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .action-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 0.35rem;
+    }
+
+    .action-desc {
+        font-size: 0.8rem;
+        color: #6b8070;
+        line-height: 1.6;
+        font-weight: 300;
+        margin-bottom: 1rem;
+    }
+
+    .action-link-text {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: gap 0.2s;
+    }
+
+    .action-card:hover .action-link-text { gap: 8px; }
+
+    /* ---- MODEL PERF PANEL ---- */
+    .model-panel {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid rgba(196,151,58,0.12);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+
+    .model-panel-header {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .model-panel-header .panel-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.1rem;
+        color: #f5f0e8;
+        font-weight: 400;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    .model-panel-header .panel-badge {
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #a8c5b0;
+        background: rgba(255,255,255,0.07);
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+
+    .model-panel-body { padding: 1.5rem; }
+
+    .model-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.9rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        gap: 1rem;
+    }
+
+    .model-row:last-child { border-bottom: none; }
+
+    .model-name-col { flex: 1; }
+
+    .model-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a3a2a;
+    }
+
+    .model-type {
+        font-size: 0.7rem;
+        color: #9aaf9e;
+        letter-spacing: 0.06em;
+    }
+
+    .model-bar-col { flex: 2; }
+
+    .model-bar {
+        height: 7px;
+        background: #eee;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 3px;
+    }
+
+    .model-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+    }
+
+    .bar-green { background: linear-gradient(90deg, #2d5a3d, #4a7c5f); }
+    .bar-gold  { background: linear-gradient(90deg, #c4973a, #e8b84b); }
+
+    .model-val {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2d5a3d;
+        white-space: nowrap;
+    }
+
+    /* ---- INFO PANEL ---- */
+    .info-panel {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid rgba(196,151,58,0.12);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .info-panel-header {
+        background: linear-gradient(135deg, #12201a, #1e3828);
+        padding: 1.1rem 1.5rem;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    .info-panel-header span {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.05rem;
+        color: #f5f0e8;
+    }
+
+    .info-panel-body { padding: 1.5rem; }
+
+    .info-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        gap: 0.5rem;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-key {
+        font-size: 0.75rem;
+        color: #6b8070;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        font-weight: 500;
+        flex-shrink: 0;
+    }
+
+    .info-val {
+        font-size: 0.82rem;
+        color: #1a3a2a;
+        font-weight: 400;
+        text-align: right;
+    }
+
+    .info-val.highlight {
+        color: #2d5a3d;
+        font-weight: 600;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1rem;
+    }
+</style>
+
+<div class="admin-home">
+    <div class="container-fluid px-0">
+
+        <!-- WELCOME BANNER -->
+        <div class="welcome-banner mb-4">
+            <div class="welcome-left">
+                <div class="eyebrow">
+                    <span style="width:7px;height:7px;background:#4a7c5f;border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
+                    Admin Dashboard
+                </div>
+                <h1>Welcome back, <em>Administrator</em> </h1>
+                <p>Manage users, monitor AI model performance, and oversee herbal plant predictions.</p>
+            </div>
+            <div class="welcome-right">
+                <a href="{% url 'RegisterUsersView' %}" class="btn-dash btn-dash-primary">
+                    <i class="fas fa-users"></i> View Users
+                </a>
+                <a href="{% url 'index' %}" class="btn-dash btn-dash-outline">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="stat-card green">
+                    <div class="stat-icon green">🌿</div>
+                    <div class="stat-number">81</div>
+                    <div class="stat-label">Plant Species</div>
+                    <div class="stat-sub">Recognized by AI model</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card gold">
+                    <div class="stat-icon gold">⚡</div>
+                    <div class="stat-number">89%</div>
+                    <div class="stat-label">MobileNet Accuracy</div>
+                    <div class="stat-sub">Best performing model</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card teal">
+                    <div class="stat-icon teal">🖼️</div>
+                    <div class="stat-number">1,282</div>
+                    <div class="stat-label">Training Images</div>
+                    <div class="stat-sub">1,059 train · 223 test</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card amber">
+                    <div class="stat-icon amber">🧠</div>
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">DL Models</div>
+                    <div class="stat-sub">CNN + MobileNet V2</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="dash-section-title mb-3">
+            <span class="title-icon">⚡</span> Quick Actions
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <a href="{% url 'RegisterUsersView' %}" class="action-card">
+                    <div class="action-icon" style="background:rgba(45,90,61,0.1);">👥</div>
+                    <div class="action-title">Manage Users</div>
+                    <p class="action-desc">View all registered users, activate pending accounts, and manage access.</p>
+                    <div class="action-link-text" style="color:#2d5a3d;">
+                        Go to Users <i class="fas fa-arrow-right" style="font-size:0.65rem;"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <a href="#" class="action-card">
+                    <div class="action-icon" style="background:rgba(196,151,58,0.1);">📊</div>
+                    <div class="action-title">Model Reports</div>
+                    <p class="action-desc">Review training accuracy, loss graphs, and comparison of CNN vs MobileNet.</p>
+                    <div class="action-link-text" style="color:#c4973a;">
+                        View Reports <i class="fas fa-arrow-right" style="font-size:0.65rem;"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <a href="#" class="action-card">
+                    <div class="action-icon" style="background:rgba(26,107,90,0.1);">🔍</div>
+                    <div class="action-title">Predictions Log</div>
+                    <p class="action-desc">Monitor all leaf image predictions made by users through the system.</p>
+                    <div class="action-link-text" style="color:#1a6b5a;">
+                        View Logs <i class="fas fa-arrow-right" style="font-size:0.65rem;"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <a href="{% url 'index' %}" class="action-card">
+                    <div class="action-icon" style="background:rgba(192,57,43,0.08);">🚪</div>
+                    <div class="action-title">Logout</div>
+                    <p class="action-desc">Securely end your admin session and return to the main site homepage.</p>
+                    <div class="action-link-text" style="color:#c0392b;">
+                        Sign Out <i class="fas fa-arrow-right" style="font-size:0.65rem;"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- MODEL PERFORMANCE + PROJECT INFO -->
+        <div class="row g-3">
+
+            <!-- Model Performance -->
+            <div class="col-lg-7">
+                <div class="dash-section-title mb-3">
+                    <span class="title-icon">🧠</span> Model Performance
+                </div>
+                <div class="model-panel">
+                    <div class="model-panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-chart-bar" style="color:#e8b84b;font-size:0.9rem;"></i>
+                            Training Results
+                        </div>
+                        <span class="panel-badge">CNN vs MobileNet</span>
+                    </div>
+                    <div class="model-panel-body">
+
+                        <!-- CNN Accuracy -->
+                        <div class="model-row">
+                            <div class="model-name-col">
+                                <div class="model-name">CNN</div>
+                                <div class="model-type">Accuracy</div>
+                            </div>
+                            <div class="model-bar-col">
+                                <div class="model-bar">
+                                    <div class="model-bar-fill bar-gold" style="width:69%;"></div>
+                                </div>
+                                <div style="font-size:0.68rem;color:#9aaf9e;">69 / 100</div>
+                            </div>
+                            <div class="model-val" style="color:#c4973a;">69%</div>
+                        </div>
+
+                        <!-- CNN Loss -->
+                        <div class="model-row">
+                            <div class="model-name-col">
+                                <div class="model-name">CNN</div>
+                                <div class="model-type">Loss</div>
+                            </div>
+                            <div class="model-bar-col">
+                                <div class="model-bar">
+                                    <div class="model-bar-fill" style="width:56%;background:linear-gradient(90deg,#c0392b,#e67e22);"></div>
+                                </div>
+                                <div style="font-size:0.68rem;color:#9aaf9e;">Higher is worse</div>
+                            </div>
+                            <div class="model-val" style="color:#c0392b;">1.12</div>
+                        </div>
+
+                        <!-- MobileNet Accuracy -->
+                        <div class="model-row">
+                            <div class="model-name-col">
+                                <div class="model-name">MobileNet V2</div>
+                                <div class="model-type">Accuracy ✦ Best</div>
+                            </div>
+                            <div class="model-bar-col">
+                                <div class="model-bar">
+                                    <div class="model-bar-fill bar-green" style="width:89%;"></div>
+                                </div>
+                                <div style="font-size:0.68rem;color:#9aaf9e;">89 / 100</div>
+                            </div>
+                            <div class="model-val">89%</div>
+                        </div>
+
+                        <!-- MobileNet Loss -->
+                        <div class="model-row">
+                            <div class="model-name-col">
+                                <div class="model-name">MobileNet V2</div>
+                                <div class="model-type">Loss</div>
+                            </div>
+                            <div class="model-bar-col">
+                                <div class="model-bar">
+                                    <div class="model-bar-fill bar-green" style="width:26%;"></div>
+                                </div>
+                                <div style="font-size:0.68rem;color:#9aaf9e;">Lower is better</div>
+                            </div>
+                            <div class="model-val">0.52</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Info -->
+            <div class="col-lg-5">
+                <div class="dash-section-title mb-3">
+                    <span class="title-icon">🌿</span> Project Info
+                </div>
+                <div class="info-panel">
+                    <div class="info-panel-header">
+                        <span>🌿</span>
+                        <span>HerbalVision AI — System Details</span>
+                    </div>
+                    <div class="info-panel-body">
+                        <div class="info-row">
+                            <span class="info-key">Project</span>
+                            <span class="info-val">Identifying Herbal Plants &amp; Medicinal Properties</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-key">Technology</span>
+                            <span class="info-val">Deep Learning (TensorFlow / Keras)</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-key">Best Model</span>
+                            <span class="info-val highlight">MobileNet V2</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-key">Input Size</span>
+                            <span class="info-val">224 × 224 px (RGB)</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-key">Species</span>
+                            <span class="info-val highlight">81 Classes</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-key">Train / Test</span>
+                            <span class="info-val">1,059 / 223 Images</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-key">Framework</span>
+                            <span class="info-val">Django 5.2 · Python 3.11</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

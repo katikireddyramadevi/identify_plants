@@ -1,0 +1,465 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contents %}
+<style>
+    .login-section {
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(160deg, #0d2218 0%, #1a3a2a 50%, #0f2619 100%);
+        padding: 3rem 1rem;
+    }
+
+    /* Ambient background orbs */
+    .login-section::before {
+        content: '';
+        position: absolute;
+        width: 500px; height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(74,124,95,0.15) 0%, transparent 70%);
+        top: -100px; right: -100px;
+        pointer-events: none;
+    }
+
+    .login-section::after {
+        content: '';
+        position: absolute;
+        width: 350px; height: 350px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(196,151,58,0.08) 0%, transparent 70%);
+        bottom: -80px; left: 5%;
+        pointer-events: none;
+    }
+
+    /* Floating leaves */
+    .bg-leaf {
+        position: absolute;
+        font-size: 100px;
+        opacity: 0.04;
+        pointer-events: none;
+        animation: floatLeaf 9s ease-in-out infinite;
+    }
+    .bg-leaf:nth-child(1) { top: 8%;  left: 4%;  font-size: 130px; animation-delay: 0s; }
+    .bg-leaf:nth-child(2) { bottom: 10%; right: 6%; font-size: 90px;  animation-delay: 3s; }
+    .bg-leaf:nth-child(3) { top: 50%; left: 50%; font-size: 70px;  animation-delay: 6s; }
+
+    @keyframes floatLeaf {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50%       { transform: translateY(-18px) rotate(6deg); }
+    }
+
+    /* ---- WRAPPER (two-panel card) ---- */
+    .login-wrapper {
+        display: flex;
+        width: 100%;
+        max-width: 900px;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+        position: relative;
+        z-index: 2;
+        animation: fadeUp 0.7s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- LEFT PANEL ---- */
+    .login-left {
+        flex: 1;
+        background: linear-gradient(160deg, #1a3a2a, #2d5a3d);
+        padding: 3rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .login-left::before {
+        content: '🌿';
+        position: absolute;
+        font-size: 18rem;
+        opacity: 0.05;
+        bottom: -3rem; right: -3rem;
+        pointer-events: none;
+    }
+
+    .left-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.25);
+        color: #e8b84b;
+        font-size: 0.68rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: 5px 14px;
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+    }
+
+    .left-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.4rem;
+        font-weight: 300;
+        color: #f5f0e8;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .left-title em {
+        font-style: italic;
+        color: #e8b84b;
+    }
+
+    .left-desc {
+        color: #a8c5b0;
+        font-size: 0.85rem;
+        line-height: 1.75;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        max-width: 280px;
+    }
+
+    .left-features {
+        list-style: none;
+        padding: 0; margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .left-features li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #a8c5b0;
+        font-size: 0.82rem;
+        font-weight: 300;
+    }
+
+    .left-features li .feat-dot {
+        width: 22px; height: 22px;
+        background: rgba(74,124,95,0.3);
+        border: 1px solid rgba(74,124,95,0.5);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+        color: #6b9e7e;
+    }
+
+    /* ---- RIGHT PANEL (form) ---- */
+    .login-right {
+        flex: 1;
+        background: #f5f0e8;
+        padding: 3rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .form-heading {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.9rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 0.25rem;
+    }
+
+    .form-subheading {
+        font-size: 0.8rem;
+        color: #6b8070;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        letter-spacing: 0.02em;
+    }
+
+    /* Input groups */
+    .input-group-custom {
+        margin-bottom: 1.25rem;
+    }
+
+    .input-group-custom label {
+        display: block;
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #4a7c5f;
+        font-weight: 500;
+        margin-bottom: 0.45rem;
+    }
+
+    .input-wrap {
+        position: relative;
+    }
+
+    .input-wrap i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a8c5b0;
+        font-size: 0.85rem;
+        transition: color 0.3s;
+    }
+
+    .input-wrap input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.6rem;
+        border: 1.5px solid rgba(74,124,95,0.2);
+        border-radius: 12px;
+        background: white;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.88rem;
+        color: #1a3a2a;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .input-wrap input::placeholder {
+        color: #b5c8bc;
+        font-weight: 300;
+    }
+
+    .input-wrap input:focus {
+        border-color: #4a7c5f;
+        box-shadow: 0 0 0 4px rgba(74,124,95,0.1);
+    }
+
+    .input-wrap input:focus + i,
+    .input-wrap:focus-within i {
+        color: #4a7c5f;
+    }
+
+    /* Show/hide password toggle */
+    .toggle-pw {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #a8c5b0;
+        font-size: 0.85rem;
+        transition: color 0.3s;
+        border: none;
+        background: none;
+        padding: 0;
+    }
+
+    .toggle-pw:hover { color: #4a7c5f; }
+
+    /* Submit button */
+    .btn-login {
+        width: 100%;
+        padding: 0.85rem;
+        background: linear-gradient(135deg, #2d5a3d, #4a7c5f);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-login:hover {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(45,90,61,0.35);
+    }
+
+    .btn-login:active { transform: translateY(0); }
+
+    /* Divider */
+    .form-divider {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .form-divider::before,
+    .form-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(74,124,95,0.15);
+    }
+
+    .form-divider span {
+        font-size: 0.72rem;
+        color: #a8b5a0;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    /* Register link */
+    .register-link {
+        text-align: center;
+        font-size: 0.82rem;
+        color: #6b8070;
+        font-weight: 300;
+    }
+
+    .register-link a {
+        color: #4a7c5f;
+        font-weight: 500;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(74,124,95,0.3);
+        transition: all 0.2s;
+    }
+
+    .register-link a:hover {
+        color: #2d5a3d;
+        border-color: #2d5a3d;
+    }
+
+    /* Messages */
+    .alert-herbal {
+        background: rgba(220, 83, 83, 0.08);
+        border: 1px solid rgba(220, 83, 83, 0.25);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.25rem;
+        font-size: 0.82rem;
+        color: #c0392b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .alert-herbal-success {
+        background: rgba(74,124,95,0.08);
+        border-color: rgba(74,124,95,0.25);
+        color: #2d5a3d;
+    }
+
+    /* ---- RESPONSIVE: hide left panel on small screens ---- */
+    @media (max-width: 767px) {
+        .login-left { display: none; }
+        .login-wrapper {
+            max-width: 440px;
+            border-radius: 22px;
+        }
+        .login-right {
+            padding: 2.5rem 1.75rem;
+        }
+    }
+</style>
+
+<section class="login-section">
+    <span class="bg-leaf">🌿</span>
+    <span class="bg-leaf">🍃</span>
+    <span class="bg-leaf">🌱</span>
+
+    <div class="login-wrapper">
+
+        <!-- LEFT INFO PANEL -->
+        <div class="login-left">
+            <div class="left-eyebrow">
+                <span style="width:7px;height:7px;background:#4a7c5f;border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
+                HerbalVision AI
+            </div>
+
+            <h2 class="left-title">Welcome<br>Back to<br><em>HerbalVision</em></h2>
+
+            <p class="left-desc">
+                Sign in to access the plant identification system and explore the medicinal properties of 81 herbal species.
+            </p>
+
+            <ul class="left-features">
+                <li><span class="feat-dot">🌿</span> Identify 81 medicinal plant species</li>
+                <li><span class="feat-dot">⚡</span> 89% accuracy with MobileNet V2</li>
+                <li><span class="feat-dot">📊</span> View training graphs & model stats</li>
+                <li><span class="feat-dot">🔍</span> Instant leaf image prediction</li>
+            </ul>
+        </div>
+
+        <!-- RIGHT FORM PANEL -->
+        <div class="login-right">
+            <div class="form-heading">Sign In</div>
+            <div class="form-subheading">Enter your credentials to continue</div>
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert-herbal {% if message.tags == 'success' %}alert-herbal-success{% endif %}">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form action="{% url 'UserLoginCheck' %}" method="POST">
+                {% csrf_token %}
+
+                <!-- Login ID -->
+                <div class="input-group-custom">
+                    <label for="loginid">Login ID</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="loginid" name="loginid" required placeholder="Enter your login ID">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="input-group-custom">
+                    <label for="pswd">Password</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="pswd" name="pswd" required placeholder="Enter your password">
+                        <button type="button" class="toggle-pw" onclick="togglePassword()" id="toggleBtn">
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-leaf"></i> Login to HerbalVision
+                </button>
+            </form>
+
+            <div class="form-divider"><span>Don't have an account?</span></div>
+
+            <div class="register-link">
+                New here? <a href="{% url 'UserRegisterForm' %}">Create a free account</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+    function togglePassword() {
+        const input = document.getElementById('pswd');
+        const icon  = document.getElementById('eyeIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,458 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contents %}
+<style>
+    .admin-login-section {
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(160deg, #0d1a14 0%, #1a2e22 50%, #0a1810 100%);
+        padding: 3rem 1rem;
+    }
+
+    /* Ambient orbs */
+    .admin-login-section::before {
+        content: '';
+        position: absolute;
+        width: 500px; height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(196,151,58,0.1) 0%, transparent 70%);
+        top: -100px; right: -100px;
+        pointer-events: none;
+    }
+
+    .admin-login-section::after {
+        content: '';
+        position: absolute;
+        width: 360px; height: 360px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(74,124,95,0.08) 0%, transparent 70%);
+        bottom: -80px; left: 5%;
+        pointer-events: none;
+    }
+
+    /* Floating bg icons */
+    .bg-icon {
+        position: absolute;
+        opacity: 0.035;
+        pointer-events: none;
+        animation: floatIcon 10s ease-in-out infinite;
+        font-size: 110px;
+    }
+    .bg-icon:nth-child(1) { top: 8%;  left: 4%;  font-size: 150px; animation-delay: 0s; }
+    .bg-icon:nth-child(2) { bottom: 8%; right: 5%; font-size: 90px;  animation-delay: 4s; }
+    .bg-icon:nth-child(3) { top: 48%; left: 46%; font-size: 65px;  animation-delay: 7s; }
+
+    @keyframes floatIcon {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50%       { transform: translateY(-16px) rotate(5deg); }
+    }
+
+    /* ---- WRAPPER ---- */
+    .admin-wrapper {
+        display: flex;
+        width: 100%;
+        max-width: 860px;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+        position: relative;
+        z-index: 2;
+        animation: fadeUp 0.7s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- LEFT PANEL ---- */
+    .admin-left {
+        flex: 1;
+        background: linear-gradient(160deg, #12201a, #1e3828);
+        padding: 3rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        border-right: 1px solid rgba(196,151,58,0.15);
+    }
+
+    .admin-left::before {
+        content: '🛡️';
+        position: absolute;
+        font-size: 17rem;
+        opacity: 0.04;
+        bottom: -2rem; right: -2rem;
+        pointer-events: none;
+    }
+
+    .admin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.28);
+        color: #e8b84b;
+        font-size: 0.68rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: 5px 14px;
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+        width: fit-content;
+    }
+
+    .admin-left-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.3rem;
+        font-weight: 300;
+        color: #f5f0e8;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .admin-left-title em {
+        font-style: italic;
+        color: #e8b84b;
+    }
+
+    .admin-left-desc {
+        color: #7a9e8a;
+        font-size: 0.84rem;
+        line-height: 1.75;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        max-width: 270px;
+    }
+
+    /* Admin privilege list */
+    .privilege-list {
+        list-style: none;
+        padding: 0; margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .privilege-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #7a9e8a;
+        font-size: 0.81rem;
+        font-weight: 300;
+    }
+
+    .priv-icon {
+        width: 24px; height: 24px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.25);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.68rem;
+        flex-shrink: 0;
+        color: #c4973a;
+    }
+
+    /* Warning strip */
+    .admin-warning {
+        margin-top: 2rem;
+        background: rgba(196,151,58,0.08);
+        border: 1px solid rgba(196,151,58,0.2);
+        border-radius: 10px;
+        padding: 0.7rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.74rem;
+        color: #c4973a;
+        font-weight: 300;
+    }
+
+    /* ---- RIGHT PANEL ---- */
+    .admin-right {
+        flex: 1;
+        background: #f5f0e8;
+        padding: 3rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* Shield icon top */
+    .shield-icon {
+        width: 56px; height: 56px;
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 8px 24px rgba(26,58,42,0.3);
+    }
+
+    .form-heading {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.9rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 0.2rem;
+    }
+
+    .form-subheading {
+        font-size: 0.8rem;
+        color: #6b8070;
+        font-weight: 300;
+        margin-bottom: 2rem;
+    }
+
+    /* Inputs */
+    .field-group { margin-bottom: 1.2rem; }
+
+    .field-group label {
+        display: block;
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #4a7c5f;
+        font-weight: 500;
+        margin-bottom: 0.42rem;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-wrap i.field-icon {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #b5c8bc;
+        font-size: 0.82rem;
+        transition: color 0.3s;
+        pointer-events: none;
+    }
+
+    .input-wrap input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 1.5px solid rgba(74,124,95,0.2);
+        border-radius: 11px;
+        background: white;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.86rem;
+        color: #1a3a2a;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .input-wrap input::placeholder {
+        color: #b5c8bc;
+        font-weight: 300;
+        font-size: 0.82rem;
+    }
+
+    .input-wrap input:focus {
+        border-color: #c4973a;
+        box-shadow: 0 0 0 4px rgba(196,151,58,0.1);
+    }
+
+    .input-wrap:focus-within i.field-icon { color: #c4973a; }
+
+    /* Show/hide password */
+    .toggle-pw {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #b5c8bc;
+        font-size: 0.82rem;
+        border: none;
+        background: none;
+        padding: 0;
+        transition: color 0.3s;
+    }
+    .toggle-pw:hover { color: #c4973a; }
+
+    /* Buttons row */
+    .btn-row {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .btn-admin-login {
+        flex: 1;
+        padding: 0.85rem;
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        color: white;
+        border: none;
+        border-radius: 11px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.86rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+
+    .btn-admin-login:hover {
+        background: linear-gradient(135deg, #0d2218, #1a3a2a);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(26,58,42,0.4);
+    }
+
+    .btn-admin-reset {
+        padding: 0.85rem 1.5rem;
+        background: transparent;
+        color: #6b8070;
+        border: 1.5px solid rgba(74,124,95,0.25);
+        border-radius: 11px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.86rem;
+        font-weight: 400;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+
+    .btn-admin-reset:hover {
+        background: rgba(74,124,95,0.06);
+        border-color: rgba(74,124,95,0.4);
+        color: #2d5a3d;
+    }
+
+    /* Back to user login */
+    .back-link {
+        text-align: center;
+        font-size: 0.8rem;
+        color: #6b8070;
+        font-weight: 300;
+        margin-top: 1.3rem;
+    }
+
+    .back-link a {
+        color: #4a7c5f;
+        font-weight: 500;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(74,124,95,0.3);
+        transition: all 0.2s;
+    }
+
+    .back-link a:hover { color: #2d5a3d; border-color: #2d5a3d; }
+
+    /* Responsive */
+    @media (max-width: 767px) {
+        .admin-left { display: none; }
+        .admin-wrapper { max-width: 440px; border-radius: 22px; }
+        .admin-right { padding: 2.5rem 1.75rem; }
+    }
+</style>
+
+<section class="admin-login-section">
+    <span class="bg-icon">🛡️</span>
+    <span class="bg-icon">🌿</span>
+    <span class="bg-icon">🔒</span>
+
+    <div class="admin-wrapper">
+
+        <!-- LEFT PANEL -->
+        <div class="admin-left">
+            <div class="admin-badge">
+                <i class="fas fa-shield-alt" style="font-size:0.65rem;"></i>
+                Admin Portal
+            </div>
+
+            <h2 class="admin-left-title">Secure<br><em>Admin</em><br>Access</h2>
+
+            <p class="admin-left-desc">
+                Restricted area. Only authorized administrators can access the HerbalVision management panel.
+            </p>
+
+            <ul class="privilege-list">
+                <li><span class="priv-icon">👥</span> View all registered users</li>
+                <li><span class="priv-icon">✅</span> Activate / manage accounts</li>
+                <li><span class="priv-icon">📊</span> Monitor model performance</li>
+                <li><span class="priv-icon">🌿</span> Oversee plant predictions</li>
+            </ul>
+
+            <div class="admin-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Unauthorized access is strictly prohibited.
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="admin-right">
+            <div class="shield-icon">🛡️</div>
+
+            <div class="form-heading">Admin Login</div>
+            <div class="form-subheading">Enter your administrator credentials</div>
+
+            <form method="POST" action="{% url 'AdminLogin' %}">
+                {% csrf_token %}
+
+                <!-- Login ID -->
+                <div class="field-group">
+                    <label for="login_id">Admin ID</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user-shield field-icon"></i>
+                        <input type="text" id="login_id" name="login_id"
+                               placeholder="Enter admin login ID" required autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="field-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-key field-icon"></i>
+                        <input type="password" id="password" name="password"
+                               placeholder="Enter admin password" required>
+                        <button type="button" class="toggle-pw" onclick="togglePw()">
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="btn-row">
+                    <button type="submit" class="btn-admin-login">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <button type="reset" class="btn-admin-reset">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+            </form>
+
+            <div class="back-link">
+                Not an admin? <a href="{% url 'UserLogin' %}">Go to User Login</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+    function togglePw() {
+        const input = document.getElementById('password');
+        const icon  = document.getElementById('eyeIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+</script>
+
+{% endblock %}

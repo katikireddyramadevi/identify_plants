@@ -1,0 +1,554 @@
+{% extends 'admins/adminbase.html' %}
+
+{% block page_title %}Registered Users{% endblock %}
+
+{% block contents %}
+<style>
+    .users-section {
+        background: #f0ebe0;
+        min-height: calc(100vh - 175px);
+        padding: 2.5rem 2rem;
+    }
+
+    /* ---- PAGE HEADER ---- */
+    .page-banner {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3d 100%);
+        border-radius: 18px;
+        padding: 1.75rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(196,151,58,0.2);
+        box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-banner::before {
+        content: '👥';
+        position: absolute;
+        font-size: 9rem;
+        opacity: 0.04;
+        right: 1.5rem; top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .banner-left .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.25);
+        color: #e8b84b;
+        font-size: 0.67rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 3px 12px;
+        border-radius: 20px;
+        margin-bottom: 0.55rem;
+    }
+
+    .banner-left h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.7rem;
+        font-weight: 300;
+        color: #f5f0e8;
+        margin: 0 0 0.25rem;
+    }
+
+    .banner-left h2 em { font-style: italic; color: #e8b84b; }
+
+    .banner-left p {
+        color: #a8c5b0;
+        font-size: 0.8rem;
+        font-weight: 300;
+        margin: 0;
+    }
+
+    .banner-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .count-chip {
+        background: rgba(196,151,58,0.15);
+        border: 1px solid rgba(196,151,58,0.3);
+        border-radius: 12px;
+        padding: 0.6rem 1.2rem;
+        text-align: center;
+    }
+
+    .count-chip .num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #e8b84b;
+        line-height: 1;
+    }
+
+    .count-chip .lbl {
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #a8c5b0;
+        display: block;
+    }
+
+    /* ---- TABLE CARD ---- */
+    .table-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid rgba(196,151,58,0.12);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+    .table-card-header {
+        padding: 1.1rem 1.5rem;
+        background: #faf7f0;
+        border-bottom: 1px solid rgba(196,151,58,0.12);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .table-card-header .header-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Search box */
+    .search-wrap {
+        position: relative;
+    }
+
+    .search-wrap i {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #b5c8bc;
+        font-size: 0.78rem;
+        pointer-events: none;
+    }
+
+    .search-wrap input {
+        padding: 0.5rem 1rem 0.5rem 2.2rem;
+        border: 1.5px solid rgba(74,124,95,0.2);
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        color: #1a3a2a;
+        outline: none;
+        transition: all 0.3s;
+        width: 220px;
+        background: white;
+    }
+
+    .search-wrap input::placeholder { color: #b5c8bc; }
+
+    .search-wrap input:focus {
+        border-color: #4a7c5f;
+        box-shadow: 0 0 0 3px rgba(74,124,95,0.1);
+        width: 260px;
+    }
+
+    /* ---- TABLE ---- */
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.84rem;
+    }
+
+    .users-table thead tr {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+    }
+
+    .users-table thead th {
+        padding: 0.9rem 1.1rem;
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #a8c5b0;
+        font-weight: 500;
+        white-space: nowrap;
+        border: none;
+    }
+
+    .users-table thead th:first-child { border-radius: 0; }
+
+    .users-table tbody tr {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        transition: background 0.2s ease;
+    }
+
+    .users-table tbody tr:last-child { border-bottom: none; }
+
+    .users-table tbody tr:hover { background: rgba(74,124,95,0.04); }
+
+    .users-table tbody td {
+        padding: 0.9rem 1.1rem;
+        color: #2a3d32;
+        vertical-align: middle;
+        border: none;
+    }
+
+    /* S.No badge */
+    .sno-badge {
+        width: 28px; height: 28px;
+        background: rgba(45,90,61,0.08);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #2d5a3d;
+    }
+
+    /* Name cell */
+    .name-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .name-avatar {
+        width: 34px; height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2d5a3d, #4a7c5f);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+        flex-shrink: 0;
+        text-transform: uppercase;
+    }
+
+    .name-text {
+        font-weight: 500;
+        color: #1a3a2a;
+        font-size: 0.86rem;
+    }
+
+    .loginid-text {
+        font-size: 0.72rem;
+        color: #6b8070;
+        font-weight: 300;
+        font-family: monospace;
+        letter-spacing: 0.03em;
+    }
+
+    /* Contact cell */
+    .contact-cell .mobile {
+        font-size: 0.82rem;
+        color: #2a3d32;
+    }
+
+    .contact-cell .email {
+        font-size: 0.72rem;
+        color: #6b8070;
+        font-weight: 300;
+    }
+
+    /* Locality */
+    .locality-text {
+        font-size: 0.8rem;
+        color: #4a7c5f;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .status-waiting {
+        background: rgba(196,151,58,0.1);
+        border: 1px solid rgba(196,151,58,0.25);
+        color: #c4973a;
+    }
+
+    .status-activated {
+        background: rgba(45,90,61,0.1);
+        border: 1px solid rgba(45,90,61,0.25);
+        color: #2d5a3d;
+    }
+
+    .status-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .dot-waiting  { background: #c4973a; }
+    .dot-activated { background: #2d5a3d; animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.5; }
+    }
+
+    /* Activate button */
+    .btn-activate {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: linear-gradient(135deg, #2d5a3d, #4a7c5f);
+        color: white;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        border: none;
+    }
+
+    .btn-activate:hover {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(45,90,61,0.3);
+        text-decoration: none;
+    }
+
+    .activated-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.75rem;
+        color: #2d5a3d;
+        font-weight: 500;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.4;
+    }
+
+    .empty-state p {
+        color: #6b8070;
+        font-size: 0.9rem;
+        font-weight: 300;
+    }
+
+    /* Responsive scroll */
+    .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Table footer */
+    .table-card-footer {
+        padding: 0.9rem 1.5rem;
+        background: #faf7f0;
+        border-top: 1px solid rgba(196,151,58,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .footer-info {
+        font-size: 0.75rem;
+        color: #6b8070;
+        font-weight: 300;
+    }
+
+    .footer-info span {
+        color: #2d5a3d;
+        font-weight: 500;
+    }
+</style>
+
+<div class="users-section">
+    <div class="container-fluid px-0">
+
+        <!-- PAGE BANNER -->
+        <div class="page-banner mb-4">
+            <div class="banner-left">
+                <div class="eyebrow">
+                    <i class="fas fa-shield-alt" style="font-size:0.6rem;"></i>
+                    Admin · User Management
+                </div>
+                <h2>Registered <em>Users</em></h2>
+                <p>View, manage, and activate user accounts for HerbalVision AI.</p>
+            </div>
+            <div class="banner-right">
+                <div class="count-chip">
+                    <div class="num">{{ data|length }}</div>
+                    <span class="lbl">Total Users</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE CARD -->
+        <div class="table-card">
+
+            <!-- Card Header -->
+            <div class="table-card-header">
+                <div class="header-title">
+                    <i class="fas fa-users" style="color:#c4973a;font-size:0.9rem;"></i>
+                    All Registered Users
+                </div>
+                <div class="search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search users..." onkeyup="searchTable()">
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-scroll">
+                <table class="users-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>User</th>
+                            <th>Contact</th>
+                            <th>Locality</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in data %}
+                        <tr>
+                            <!-- S.No -->
+                            <td>
+                                <div class="sno-badge">{{ forloop.counter }}</div>
+                            </td>
+
+                            <!-- User (Name + Login ID) -->
+                            <td>
+                                <div class="name-cell">
+                                    <div class="name-avatar">{{ i.name|first }}</div>
+                                    <div>
+                                        <div class="name-text">{{ i.name }}</div>
+                                        <div class="loginid-text">@{{ i.loginid }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Contact (Mobile + Email) -->
+                            <td>
+                                <div class="contact-cell">
+                                    <div class="mobile">
+                                        <i class="fas fa-mobile-alt" style="color:#a8c5b0;font-size:0.7rem;margin-right:4px;"></i>
+                                        {{ i.mobile }}
+                                    </div>
+                                    <div class="email">
+                                        <i class="fas fa-envelope" style="color:#a8c5b0;font-size:0.65rem;margin-right:4px;"></i>
+                                        {{ i.email }}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Locality -->
+                            <td>
+                                <div class="locality-text">
+                                    <i class="fas fa-map-marker-alt" style="font-size:0.7rem;color:#a8c5b0;"></i>
+                                    {{ i.locality }}
+                                </div>
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if i.status == 'waiting' %}
+                                    <span class="status-badge status-waiting">
+                                        <span class="status-dot dot-waiting"></span>
+                                        Waiting
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-activated">
+                                        <span class="status-dot dot-activated"></span>
+                                        Activated
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Action -->
+                            <td>
+                                {% if i.status == 'waiting' %}
+                                    <a href="/ActivaUsers/?uid={{ i.id }}" class="btn-activate">
+                                        <i class="fas fa-check"></i> Activate
+                                    </a>
+                                {% else %}
+                                    <div class="activated-label">
+                                        <i class="fas fa-check-circle" style="color:#2d5a3d;"></i>
+                                        Activated
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-icon">🌿</div>
+                                    <p>No registered users found yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="table-card-footer">
+                <div class="footer-info">
+                    Showing <span>{{ data|length }}</span> registered user{{ data|length|pluralize }}
+                </div>
+                <div class="footer-info">
+                    HerbalVision AI &mdash; Admin Panel
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function searchTable() {
+        const input  = document.getElementById('searchInput').value.toLowerCase();
+        const rows   = document.querySelectorAll('#usersTable tbody tr');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? '' : 'none';
+        });
+    }
+</script>
+
+{% endblock %}

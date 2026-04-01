@@ -1,0 +1,742 @@
+{% extends 'users/userbase.html' %}
+{% load static %}
+
+{% block page_title %}Prediction{% endblock %}
+
+{% block contents %}
+<style>
+    .prediction-section {
+        background: #f0ebe0;
+        min-height: calc(100vh - 175px);
+        padding: 2.5rem 2rem;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- PAGE BANNER ---- */
+    .page-banner {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3d 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(196,151,58,0.22);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        position: relative;
+        overflow: hidden;
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .page-banner::before {
+        content: '🔍';
+        position: absolute;
+        font-size: 10rem;
+        opacity: 0.04;
+        right: 1.5rem; top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .banner-left .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.25);
+        color: #e8b84b;
+        font-size: 0.67rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 4px 13px;
+        border-radius: 20px;
+        margin-bottom: 0.6rem;
+    }
+
+    .banner-left h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem;
+        font-weight: 300;
+        color: #f5f0e8;
+        margin: 0 0 0.3rem;
+        line-height: 1.2;
+    }
+
+    .banner-left h2 em { font-style: italic; color: #e8b84b; }
+
+    .banner-left p {
+        color: #a8c5b0;
+        font-size: 0.82rem;
+        font-weight: 300;
+        margin: 0;
+    }
+
+    .banner-right {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+    }
+
+    .info-chip {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(168,197,176,0.2);
+        border-radius: 12px;
+        padding: 0.6rem 1.1rem;
+        text-align: center;
+    }
+
+    .info-chip .num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #e8b84b;
+        line-height: 1;
+        display: block;
+    }
+
+    .info-chip .lbl {
+        font-size: 0.62rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #a8c5b0;
+        display: block;
+        margin-top: 2px;
+    }
+
+    /* ---- MAIN LAYOUT ---- */
+    .pred-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    @media (max-width: 900px) {
+        .pred-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ---- UPLOAD CARD ---- */
+    .upload-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid rgba(196,151,58,0.13);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        overflow: hidden;
+        animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .upload-card-header {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        padding: 1.3rem 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .upload-card-header .header-icon {
+        width: 36px; height: 36px;
+        background: rgba(196,151,58,0.15);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .upload-card-header .header-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.15rem;
+        color: #f5f0e8;
+        font-weight: 400;
+    }
+
+    .upload-card-header .header-sub {
+        font-size: 0.7rem;
+        color: #a8c5b0;
+        font-weight: 300;
+    }
+
+    .upload-card-body { padding: 1.8rem; }
+
+    /* Drop zone */
+    .drop-zone {
+        border: 2px dashed rgba(74,124,95,0.3);
+        border-radius: 16px;
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #faf7f0;
+        position: relative;
+        margin-bottom: 1.25rem;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+        border-color: #4a7c5f;
+        background: rgba(74,124,95,0.04);
+    }
+
+    .drop-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .drop-icon {
+        font-size: 3rem;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+
+    .drop-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 0.3rem;
+    }
+
+    .drop-sub {
+        font-size: 0.78rem;
+        color: #9aaf9e;
+        font-weight: 300;
+        margin-bottom: 1rem;
+    }
+
+    .drop-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(74,124,95,0.1);
+        border: 1px solid rgba(74,124,95,0.3);
+        color: #4a7c5f;
+        font-size: 0.78rem;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: 20px;
+        pointer-events: none;
+    }
+
+    /* Preview */
+    .preview-wrap {
+        display: none;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(196,151,58,0.2);
+        margin-bottom: 1.25rem;
+        position: relative;
+    }
+
+    .preview-wrap img {
+        width: 100%;
+        max-height: 280px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .preview-overlay {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        background: linear-gradient(transparent, rgba(26,58,42,0.75));
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .preview-filename {
+        font-size: 0.75rem;
+        color: #f5f0e8;
+        font-weight: 300;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
+    .preview-clear {
+        background: rgba(220,83,83,0.8);
+        border: none;
+        color: white;
+        font-size: 0.65rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        cursor: pointer;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: background 0.2s;
+    }
+
+    .preview-clear:hover { background: rgba(192,57,43,0.9); }
+
+    /* If uploaded image from server */
+    .uploaded-img-wrap {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(196,151,58,0.2);
+        margin-bottom: 1.25rem;
+    }
+
+    .uploaded-img-wrap img {
+        width: 100%;
+        max-height: 280px;
+        object-fit: cover;
+        display: block;
+    }
+
+    /* Submit button */
+    .btn-predict {
+        width: 100%;
+        padding: 0.9rem;
+        background: linear-gradient(135deg, #2d5a3d, #4a7c5f);
+        color: white;
+        border: none;
+        border-radius: 13px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-predict:hover {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(45,90,61,0.35);
+    }
+
+    .btn-predict:active { transform: translateY(0); }
+
+    /* Tips */
+    .tips-list {
+        list-style: none;
+        padding: 0; margin: 1.25rem 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .tips-list li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.78rem;
+        color: #6b8070;
+        font-weight: 300;
+    }
+
+    .tips-list li i {
+        color: #4a7c5f;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+    }
+
+    /* ---- RESULT CARD ---- */
+    .result-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid rgba(196,151,58,0.13);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        overflow: hidden;
+        animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .result-card-header {
+        background: linear-gradient(135deg, #12201a, #1e3828);
+        padding: 1.3rem 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .result-card-header .header-icon {
+        width: 36px; height: 36px;
+        background: rgba(196,151,58,0.15);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .result-card-header .header-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.15rem;
+        color: #f5f0e8;
+        font-weight: 400;
+    }
+
+    .result-card-header .header-sub {
+        font-size: 0.7rem;
+        color: #a8c5b0;
+        font-weight: 300;
+    }
+
+    .result-card-body { padding: 1.8rem; }
+
+    /* Empty state */
+    .result-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .result-empty .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.35;
+        display: block;
+        animation: float 5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-10px); }
+    }
+
+    .result-empty .empty-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.3rem;
+        color: #1a3a2a;
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+    }
+
+    .result-empty .empty-sub {
+        font-size: 0.8rem;
+        color: #9aaf9e;
+        font-weight: 300;
+        line-height: 1.6;
+    }
+
+    /* Result display */
+    .result-plant-name {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        border-radius: 14px;
+        padding: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.2rem;
+        border: 1px solid rgba(196,151,58,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .result-plant-name::before {
+        content: '🌿';
+        position: absolute;
+        font-size: 6rem;
+        opacity: 0.05;
+        right: -1rem; top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .result-label {
+        font-size: 0.65rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #6b9e7e;
+        margin-bottom: 0.4rem;
+    }
+
+    .result-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        color: #e8b84b;
+        line-height: 1.1;
+    }
+
+    .result-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 0.5rem;
+        background: rgba(74,124,95,0.2);
+        border: 1px solid rgba(74,124,95,0.3);
+        color: #6b9e7e;
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 12px;
+        border-radius: 20px;
+    }
+
+    .result-badge .dot {
+        width: 6px; height: 6px;
+        background: #4a7c5f;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.4; }
+    }
+
+    /* Description box */
+    .desc-box {
+        background: #faf7f0;
+        border: 1px solid rgba(196,151,58,0.15);
+        border-radius: 13px;
+        padding: 1.25rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .desc-box-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #4a7c5f;
+        font-weight: 500;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .desc-box-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(196,151,58,0.15);
+    }
+
+    .desc-text {
+        font-size: 0.85rem;
+        color: #3a5040;
+        line-height: 1.75;
+        font-weight: 300;
+    }
+
+    /* Again button */
+    .btn-again {
+        width: 100%;
+        padding: 0.8rem;
+        background: transparent;
+        color: #4a7c5f;
+        border: 1.5px solid rgba(74,124,95,0.3);
+        border-radius: 12px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        text-decoration: none;
+    }
+
+    .btn-again:hover {
+        background: rgba(74,124,95,0.07);
+        border-color: #4a7c5f;
+        color: #2d5a3d;
+    }
+
+    @media (max-width: 768px) {
+        .prediction-section { padding: 1.5rem 1rem; }
+        .page-banner { padding: 1.5rem; }
+        .banner-left h2 { font-size: 1.45rem; }
+    }
+</style>
+
+<div class="prediction-section">
+    <div class="container-fluid px-0">
+
+        <!-- PAGE BANNER -->
+        <div class="page-banner mb-4">
+            <div class="banner-left">
+                <div class="eyebrow">
+                    <span style="width:7px;height:7px;background:#4a7c5f;border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
+                    AI Prediction · MobileNet V2
+                </div>
+                <h2>Leaf <em>Identification</em></h2>
+                <p>Upload a leaf image to identify the plant and discover its medicinal properties.</p>
+            </div>
+            <div class="banner-right">
+                <div class="info-chip">
+                    <span class="num">81</span>
+                    <span class="lbl">Plant Classes</span>
+                </div>
+                <div class="info-chip">
+                    <span class="num">89%</span>
+                    <span class="lbl">Accuracy</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PREDICTION LAYOUT -->
+        <div class="pred-layout">
+
+            <!-- UPLOAD CARD -->
+            <div class="upload-card">
+                <div class="upload-card-header">
+                    <div class="header-icon">📸</div>
+                    <div>
+                        <div class="header-title">Upload Leaf Image</div>
+                        <div class="header-sub">JPG or PNG · Clear, well-lit photo</div>
+                    </div>
+                </div>
+
+                <div class="upload-card-body">
+                    <form method="POST" enctype="multipart/form-data" id="predForm">
+                        {% csrf_token %}
+
+                        <!-- If image already uploaded, show it -->
+                        {% if image_url %}
+                            <div class="uploaded-img-wrap">
+                                <img src="{{ image_url }}" alt="Uploaded Leaf">
+                            </div>
+                        {% endif %}
+
+                        <!-- Drop zone (only show if no result yet) -->
+                        {% if not result %}
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" name="image" id="imageInput"
+                                   accept="image/*" required onchange="previewImage(event)">
+                            <span class="drop-icon">🍃</span>
+                            <div class="drop-title">Drop your leaf image here</div>
+                            <div class="drop-sub">or click to browse from your device</div>
+                            <div class="drop-btn">
+                                <i class="fas fa-folder-open"></i> Browse Files
+                            </div>
+                        </div>
+
+                        <!-- Client-side preview -->
+                        <div class="preview-wrap" id="previewWrap">
+                            <img id="previewImg" src="" alt="Preview">
+                            <div class="preview-overlay">
+                                <span class="preview-filename" id="previewName"></span>
+                                <button type="button" class="preview-clear" onclick="clearPreview()">
+                                    ✕ Remove
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn-predict">
+                            <i class="fas fa-leaf"></i>
+                            {% if result %}Predict Again{% else %}Identify Plant{% endif %}
+                        </button>
+
+                    </form>
+
+                    <ul class="tips-list">
+                        <li><i class="fas fa-check-circle"></i> Use a clear, well-lit photo of a single leaf</li>
+                        <li><i class="fas fa-check-circle"></i> Ensure the leaf fills most of the frame</li>
+                        <li><i class="fas fa-check-circle"></i> Avoid shadows or blurred images</li>
+                        <li><i class="fas fa-check-circle"></i> Supported formats: JPG, PNG</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- RESULT CARD -->
+            <div class="result-card">
+                <div class="result-card-header">
+                    <div class="header-icon">🌿</div>
+                    <div>
+                        <div class="header-title">Prediction Result</div>
+                        <div class="header-sub">AI-powered plant identification</div>
+                    </div>
+                </div>
+
+                <div class="result-card-body">
+                    {% if result %}
+                        <!-- Plant Name -->
+                        <div class="result-plant-name">
+                            <div class="result-label">Identified Plant</div>
+                            <div class="result-name">{{ result }}</div>
+                            <div class="result-badge">
+                                <span class="dot"></span>
+                                MobileNet V2 · 89% Accuracy
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        {% if description %}
+                        <div class="desc-box">
+                            <div class="desc-box-label">🌿 Medicinal Properties</div>
+                            <p class="desc-text">{{ description }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Predict Again -->
+                        <a href="{% url 'prediction' %}" class="btn-again">
+                            <i class="fas fa-redo"></i> Predict Another Leaf
+                        </a>
+
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="result-empty">
+                            <span class="empty-icon">🌿</span>
+                            <div class="empty-title">Awaiting Your Image</div>
+                            <p class="empty-sub">
+                                Upload a clear leaf photo on the left and click<br>
+                                <strong style="color:#4a7c5f;">Identify Plant</strong>
+                                to see the AI prediction here.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Image preview
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('previewName').textContent = file.name;
+            document.getElementById('previewWrap').style.display = 'block';
+            document.getElementById('dropZone').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearPreview() {
+        document.getElementById('previewWrap').style.display = 'none';
+        document.getElementById('dropZone').style.display = 'block';
+        document.getElementById('imageInput').value = '';
+        document.getElementById('previewImg').src = '';
+    }
+
+    // Drag and drop highlight
+    const dropZone = document.getElementById('dropZone');
+    if (dropZone) {
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, () => dropZone.classList.add('dragover'));
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover'));
+        });
+    }
+</script>
+
+{% endblock %}

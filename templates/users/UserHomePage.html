@@ -1,0 +1,609 @@
+{% extends 'users/userbase.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block contents %}
+<style>
+    .user-home {
+        background: #f0ebe0;
+        min-height: calc(100vh - 175px);
+        padding: 2.5rem 2rem;
+    }
+
+    /* ---- WELCOME BANNER ---- */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3d 60%, #1a3a2a 100%);
+        border-radius: 20px;
+        padding: 2.2rem 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(196,151,58,0.25);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        animation: fadeUp 0.6s ease both;
+    }
+
+    .welcome-banner::before {
+        content: '🌿';
+        position: absolute;
+        font-size: 13rem;
+        opacity: 0.05;
+        right: 1.5rem; top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .welcome-banner::after {
+        content: '';
+        position: absolute;
+        width: 300px; height: 300px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(196,151,58,0.07) 0%, transparent 70%);
+        top: -80px; left: 40%;
+        pointer-events: none;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-left .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(196,151,58,0.12);
+        border: 1px solid rgba(196,151,58,0.25);
+        color: #e8b84b;
+        font-size: 0.67rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 4px 13px;
+        border-radius: 20px;
+        margin-bottom: 0.75rem;
+    }
+
+    .welcome-left h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: #f5f0e8;
+        line-height: 1.2;
+        margin: 0 0 0.5rem;
+    }
+
+    .welcome-left h1 em { font-style: italic; color: #e8b84b; }
+
+    .welcome-left p {
+        color: #a8c5b0;
+        font-size: 0.84rem;
+        font-weight: 300;
+        margin: 0;
+        max-width: 420px;
+        line-height: 1.65;
+    }
+
+    .welcome-right {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-dash {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0.65rem 1.4rem;
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-dash-primary {
+        background: linear-gradient(135deg, #4a7c5f, #2d5a3d);
+        color: white;
+    }
+
+    .btn-dash-primary:hover {
+        background: linear-gradient(135deg, #e8b84b, #c4973a);
+        color: #1a3a2a;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(196,151,58,0.3);
+    }
+
+    .btn-dash-outline {
+        background: transparent;
+        color: #a8c5b0;
+        border: 1px solid rgba(168,197,176,0.3);
+    }
+
+    .btn-dash-outline:hover {
+        background: rgba(168,197,176,0.08);
+        color: #f5f0e8;
+        border-color: rgba(168,197,176,0.5);
+        transform: translateY(-2px);
+    }
+
+    /* ---- STAT CARDS ---- */
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.4rem 1.6rem;
+        border: 1px solid rgba(196,151,58,0.12);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        animation: fadeUp 0.6s ease both;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(26,58,42,0.1);
+        border-color: rgba(196,151,58,0.3);
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: 0 0 16px 16px;
+    }
+
+    .stat-card.green::after { background: linear-gradient(90deg, #2d5a3d, #4a7c5f); }
+    .stat-card.gold::after  { background: linear-gradient(90deg, #c4973a, #e8b84b); }
+    .stat-card.teal::after  { background: linear-gradient(90deg, #1a6b5a, #2d9e85); }
+    .stat-card.sage::after  { background: linear-gradient(90deg, #6b9e7e, #a8c5b0); }
+
+    .stat-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .stat-icon.green { background: rgba(45,90,61,0.1);  }
+    .stat-icon.gold  { background: rgba(196,151,58,0.1); }
+    .stat-icon.teal  { background: rgba(26,107,90,0.1);  }
+    .stat-icon.sage  { background: rgba(107,158,126,0.1); }
+
+    .stat-number {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        line-height: 1;
+        margin-bottom: 0.2rem;
+    }
+
+    .stat-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6b8070;
+        font-weight: 500;
+        margin-bottom: 0.4rem;
+    }
+
+    .stat-sub {
+        font-size: 0.73rem;
+        color: #9aaf9e;
+        font-weight: 300;
+    }
+
+    /* ---- SECTION TITLE ---- */
+    .dash-section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dash-section-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(196,151,58,0.2);
+    }
+
+    /* ---- ACTION CARDS ---- */
+    .action-card {
+        background: white;
+        border-radius: 18px;
+        padding: 1.75rem;
+        border: 1px solid rgba(196,151,58,0.12);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        height: 100%;
+        animation: fadeUp 0.6s ease both;
+    }
+
+    .action-card:nth-child(1) { animation-delay: 0.15s; }
+    .action-card:nth-child(2) { animation-delay: 0.25s; }
+    .action-card:nth-child(3) { animation-delay: 0.35s; }
+
+    .action-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 18px 44px rgba(26,58,42,0.12);
+        border-color: rgba(196,151,58,0.35);
+        text-decoration: none;
+    }
+
+    .action-icon {
+        width: 54px; height: 54px;
+        border-radius: 15px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .action-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 0.4rem;
+    }
+
+    .action-desc {
+        font-size: 0.81rem;
+        color: #6b8070;
+        line-height: 1.65;
+        font-weight: 300;
+        margin-bottom: 1.2rem;
+    }
+
+    .action-link-text {
+        font-size: 0.74rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: gap 0.2s;
+    }
+
+    .action-card:hover .action-link-text { gap: 9px; }
+
+    /* ---- PLANT HIGHLIGHT STRIP ---- */
+    .plants-strip {
+        background: linear-gradient(135deg, #1a3a2a, #2d5a3d);
+        border-radius: 18px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(196,151,58,0.2);
+        box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+        animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .plants-strip .strip-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        font-weight: 300;
+        color: #f5f0e8;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .plants-strip .strip-title em { color: #e8b84b; font-style: italic; }
+
+    .plant-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(168,197,176,0.18);
+        border-radius: 30px;
+        padding: 5px 14px;
+        color: #a8c5b0;
+        font-size: 0.78rem;
+        margin: 4px;
+        transition: all 0.25s ease;
+        cursor: default;
+    }
+
+    .plant-chip:hover {
+        background: rgba(196,151,58,0.12);
+        border-color: rgba(196,151,58,0.35);
+        color: #e8b84b;
+        transform: translateY(-2px);
+    }
+
+    .plant-chip .dot {
+        width: 5px; height: 5px;
+        background: #4a7c5f;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    /* ---- HOW TO USE STEPS ---- */
+    .steps-row {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+    }
+
+    .step-wrap { flex: 1; }
+
+    .step-card {
+        background: white;
+        border: 1px solid rgba(196,151,58,0.12);
+        border-radius: 16px;
+        padding: 1.75rem 1.4rem;
+        text-align: center;
+        position: relative;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .step-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 40px rgba(26,58,42,0.1);
+        border-color: rgba(196,151,58,0.35);
+    }
+
+    .step-number {
+        position: absolute;
+        top: -13px; left: 50%;
+        transform: translateX(-50%);
+        background: #1a3a2a;
+        color: #e8b84b;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        padding: 3px 13px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+
+    .step-icon {
+        font-size: 2.6rem;
+        margin: 0.8rem 0;
+        display: block;
+    }
+
+    .step-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1a3a2a;
+        margin-bottom: 0.4rem;
+    }
+
+    .step-desc {
+        font-size: 0.8rem;
+        color: #6b8070;
+        line-height: 1.6;
+        font-weight: 300;
+    }
+
+    .step-arrow-sep {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c4973a;
+        font-size: 1.4rem;
+        opacity: 0.4;
+        padding: 0 0.6rem;
+        flex-shrink: 0;
+        padding-top: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .steps-row       { flex-direction: column; }
+        .step-arrow-sep  { transform: rotate(90deg); padding: 0; margin: 0.5rem auto; }
+        .welcome-banner  { padding: 1.5rem; }
+        .welcome-left h1 { font-size: 1.6rem; }
+        .user-home       { padding: 1.5rem 1rem; }
+    }
+</style>
+
+<div class="user-home">
+    <div class="container-fluid px-0">
+
+        <!-- WELCOME BANNER -->
+        <div class="welcome-banner mb-4">
+            <div class="welcome-left">
+                <div class="eyebrow">
+                    <span style="width:7px;height:7px;background:#4a7c5f;border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
+                    Welcome Back
+                </div>
+                <h1>
+                    Hello, <em>
+                        {% if request.session.loggeduser %}
+                            {{ request.session.loggeduser }}
+                        {% else %}
+                            Explorer
+                        {% endif %}
+                    </em> 🌿
+                </h1>
+                <p>
+                    Identify medicinal herb leaves using AI — upload an image and get instant plant identification with its healing properties from our deep learning model.
+                </p>
+            </div>
+            <div class="welcome-right">
+                <a href="{% url 'prediction' %}" class="btn-dash btn-dash-primary">
+                    <i class="fas fa-leaf"></i> Start Prediction
+                </a>
+                <a href="{% url 'training' %}" class="btn-dash btn-dash-outline">
+                    <i class="fas fa-chart-line"></i> View Training
+                </a>
+            </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="stat-card green">
+                    <div class="stat-icon green">🌿</div>
+                    <div class="stat-number">81</div>
+                    <div class="stat-label">Plant Species</div>
+                    <div class="stat-sub">Ready to identify</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card gold">
+                    <div class="stat-icon gold">⚡</div>
+                    <div class="stat-number">89%</div>
+                    <div class="stat-label">Accuracy</div>
+                    <div class="stat-sub">MobileNet V2 model</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card teal">
+                    <div class="stat-icon teal">🖼️</div>
+                    <div class="stat-number">1,282</div>
+                    <div class="stat-label">Training Images</div>
+                    <div class="stat-sub">1,059 train · 223 test</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card sage">
+                    <div class="stat-icon sage">🧠</div>
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">DL Models</div>
+                    <div class="stat-sub">CNN + MobileNet V2</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="dash-section-title mb-3">
+            <span>⚡</span> Quick Actions
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <a href="{% url 'prediction' %}" class="action-card">
+                    <div class="action-icon" style="background:rgba(45,90,61,0.1);">🔍</div>
+                    <div class="action-title">Identify a Plant</div>
+                    <p class="action-desc">Upload a clear leaf image and let our MobileNet AI instantly identify the plant and its medicinal uses.</p>
+                    <div class="action-link-text" style="color:#2d5a3d;">
+                        Go to Prediction <i class="fas fa-arrow-right" style="font-size:0.62rem;"></i>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'training' %}" class="action-card">
+                    <div class="action-icon" style="background:rgba(196,151,58,0.1);">📊</div>
+                    <div class="action-title">Training Results</div>
+                    <p class="action-desc">Explore model training graphs, accuracy curves, and loss comparisons between CNN and MobileNet.</p>
+                    <div class="action-link-text" style="color:#c4973a;">
+                        View Training <i class="fas fa-arrow-right" style="font-size:0.62rem;"></i>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'index' %}" class="action-card">
+                    <div class="action-icon" style="background:rgba(192,57,43,0.07);">🚪</div>
+                    <div class="action-title">Logout</div>
+                    <p class="action-desc">Securely end your session and return to the HerbalVision AI homepage.</p>
+                    <div class="action-link-text" style="color:#c0392b;">
+                        Sign Out <i class="fas fa-arrow-right" style="font-size:0.62rem;"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- PLANT CHIPS STRIP -->
+        <div class="plants-strip mb-4">
+            <div class="strip-title">
+                🌿 Some Plants You Can <em>Identify</em>
+            </div>
+            <div>
+                <span class="plant-chip"><span class="dot"></span>Aloevera</span>
+                <span class="plant-chip"><span class="dot"></span>Tulsi</span>
+                <span class="plant-chip"><span class="dot"></span>Neem</span>
+                <span class="plant-chip"><span class="dot"></span>Turmeric</span>
+                <span class="plant-chip"><span class="dot"></span>Ginger</span>
+                <span class="plant-chip"><span class="dot"></span>Hibiscus</span>
+                <span class="plant-chip"><span class="dot"></span>Mint</span>
+                <span class="plant-chip"><span class="dot"></span>Curry</span>
+                <span class="plant-chip"><span class="dot"></span>Lemon</span>
+                <span class="plant-chip"><span class="dot"></span>Guava</span>
+                <span class="plant-chip"><span class="dot"></span>Mango</span>
+                <span class="plant-chip"><span class="dot"></span>Jasmine</span>
+                <span class="plant-chip"><span class="dot"></span>Papaya</span>
+                <span class="plant-chip"><span class="dot"></span>Tamarind</span>
+                <span class="plant-chip"><span class="dot"></span>Rose</span>
+                <span class="plant-chip"><span class="dot"></span>Jackfruit</span>
+                <span class="plant-chip"><span class="dot"></span>Eucalyptus</span>
+                <span class="plant-chip"><span class="dot"></span>Camphor</span>
+                <span class="plant-chip"><span class="dot"></span>Bamboo</span>
+                <span class="plant-chip"><span class="dot"></span>Pomegranate</span>
+                <span class="plant-chip"><span class="dot"></span>Amla</span>
+                <span class="plant-chip"><span class="dot"></span>Drumstick</span>
+                <span class="plant-chip"><span class="dot"></span>Marigold</span>
+                <span class="plant-chip"><span class="dot"></span>+ 58 more</span>
+            </div>
+        </div>
+
+        <!-- HOW TO USE -->
+        <div class="dash-section-title mb-3">
+            <span>📖</span> How to Use HerbalVision
+        </div>
+
+        <div class="steps-row mb-2">
+            <div class="step-wrap">
+                <div class="step-card">
+                    <div class="step-number">Step 01</div>
+                    <span class="step-icon">📸</span>
+                    <div class="step-title">Upload Leaf Image</div>
+                    <p class="step-desc">Take a clear, well-lit photo of the plant leaf and upload it on the Prediction page.</p>
+                </div>
+            </div>
+            <div class="step-arrow-sep">→</div>
+            <div class="step-wrap">
+                <div class="step-card">
+                    <div class="step-number">Step 02</div>
+                    <span class="step-icon">🤖</span>
+                    <div class="step-title">AI Processes Image</div>
+                    <p class="step-desc">Our MobileNet V2 model analyses the leaf at 224×224 resolution and predicts the species.</p>
+                </div>
+            </div>
+            <div class="step-arrow-sep">→</div>
+            <div class="step-wrap">
+                <div class="step-card">
+                    <div class="step-number">Step 03</div>
+                    <span class="step-icon">🌿</span>
+                    <div class="step-title">Get Plant Info</div>
+                    <p class="step-desc">Receive the plant name and its traditional medicinal properties instantly on screen.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
