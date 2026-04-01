@@ -1,4 +1,4 @@
-const BASE_URL = 'http://172.19.22.190:8000'; // Updated to match current system IP: 172.19.22.190
+const BASE_URL = 'https://identify-plants.onrender.com';
 
 export const api = {
   login: async (loginid, password) => {
