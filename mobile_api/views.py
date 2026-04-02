@@ -1,8 +1,5 @@
 import json
 import os
-import numpy as np
-import tensorflow as tf
-from PIL import Image
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -58,7 +55,7 @@ def api_register(request):
                 address=data.get('address'),
                 city=data.get('city'),
                 state=data.get('state'),
-                status='waiting'
+                status='activated'
             )
             return JsonResponse({'status': 'success', 'message': 'Registration successful'})
         except Exception as e:
@@ -69,6 +66,9 @@ from PIL import Image, ImageOps
 
 @csrf_exempt
 def api_predict(request):
+    import numpy as np
+    import tensorflow as tf
+    
     if request.method == 'POST' and request.FILES.get('image'):
         try:
             image_file = request.FILES['image']
