@@ -10,20 +10,7 @@ import re
 
 from .models import UserRegistrationModel
 from django.conf import settings
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.ticker as plticker
-import datetime as dt
-from sklearn import preprocessing, metrics
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.linear_model import LinearRegression
-from sklearn import metrics
-from sklearn.metrics import classification_report
+
 
 
 
