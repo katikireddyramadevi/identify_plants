@@ -267,6 +267,7 @@ def prediction(request):
     import json
     from PIL import Image
     import os
+    from .model_loader import get_model
     from django.conf import settings
  
     result = None
@@ -298,8 +299,10 @@ def prediction(request):
         img_array = np.array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
  
-        # Load model and predict
-        model = tf.keras.models.load_model(model_path)
+        # Load model via singleton and predict
+        model = get_model()
+        if model is None:
+            return render(request, 'users/prediction.html', {'error': 'Model could not be loaded.'})
         preds = model.predict(img_array)
         predicted_index = np.argmax(preds)
  

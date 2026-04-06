@@ -68,6 +68,7 @@ from PIL import Image, ImageOps
 def api_predict(request):
     import numpy as np
     import tensorflow as tf
+    from users.model_loader import get_model
     
     if request.method == 'POST' and request.FILES.get('image'):
         try:
@@ -94,7 +95,9 @@ def api_predict(request):
             img_array = np.array(img) / 255.0
             img_array = np.expand_dims(img_array, axis=0)
             
-            model = tf.keras.models.load_model(model_path)
+            model = get_model()
+            if model is None:
+                return JsonResponse({'status': 'error', 'message': 'Model could not be loaded.'}, status=500)
             preds = model.predict(img_array)
             predicted_index = np.argmax(preds)
             predicted_class = class_labels[str(predicted_index)]
