@@ -11,7 +11,7 @@ def get_model():
     """
     global _model
     if _model is None:
-        model_path = os.path.join(settings.MEDIA_ROOT, 'herb_leaf_model.h5')
+        model_path = os.path.join(settings.BASE_DIR, 'models', 'herb_leaf_model.h5')
         print(f"--- INITIALIZING ML MODEL (Process: {os.getpid()}) ---")
         if not os.path.exists(model_path):
             print(f"ERROR: Model file not found at {model_path}")

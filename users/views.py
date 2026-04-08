@@ -275,8 +275,8 @@ def prediction(request):
     image_url = None
     predicted_class = None
  
-    model_path = os.path.join(settings.MEDIA_ROOT, 'herb_leaf_model.h5')
-    json_path  = os.path.join(settings.MEDIA_ROOT, 'graph/class_labels.json')
+    model_path = os.path.join(settings.BASE_DIR, 'models', 'herb_leaf_model.h5')
+    json_path  = os.path.join(settings.BASE_DIR, 'models', 'class_labels.json')
  
     if request.method == 'POST' and request.FILES.get('image'):
  
