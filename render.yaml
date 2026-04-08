@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: identify-plants
+    env: python
+    buildCommand: ./build.sh
+    startCommand: gunicorn identify_plants_and_its_Medicinal_properties.wsgi --timeout 200 --workers 1 --threads 4 --preload
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PORT
+        value: 10000
