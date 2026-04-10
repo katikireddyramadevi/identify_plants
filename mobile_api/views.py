@@ -79,10 +79,13 @@ def api_predict(request):
                 for chunk in image_file.chunks():
                     f.write(chunk)
             
-            # Try 13MB model with 150x150
-            model_path = os.path.join(settings.MEDIA_ROOT, 'herb_leaf_model.h5')
-            json_path  = os.path.join(settings.MEDIA_ROOT, 'graph/class_labels.json')
+            # Correct paths to models directory
+            model_path = os.path.join(settings.BASE_DIR, 'models', 'herb_leaf_model.h5')
+            json_path  = os.path.join(settings.BASE_DIR, 'models', 'class_labels.json')
             
+            if not os.path.exists(json_path):
+                return JsonResponse({'status': 'error', 'message': f'Label file not found at {json_path}'}, status=500)
+
             with open(json_path, "r") as f:
                 class_labels = json.load(f)
             
