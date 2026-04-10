@@ -7,7 +7,7 @@ services:
     name: identify-plants
     env: python
     buildCommand: ./build.sh
-    startCommand: gunicorn identify_plants_and_its_Medicinal_properties.wsgi:application --bind 0.0.0.0:$PORT --timeout 300 --workers 1 --threads 4 --preload
+    startCommand: gunicorn identify_plants_and_its_Medicinal_properties.wsgi --timeout 200 --workers 1 --threads 4 --preload
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -17,6 +17,7 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
+      - key: PORT
+        value: 10000
       - key: PYTHON_VERSION
         value: 3.11.9
-
