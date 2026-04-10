@@ -12,6 +12,10 @@ pip install --upgrade pip
 # Install dependencies
 pip install --no-cache-dir -r requirements.txt
 
+# Create necessary directories
+mkdir -p media
+mkdir -p staticfiles
+
 # Collect static files
 python manage.py collectstatic --no-input
 

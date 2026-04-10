@@ -22,19 +22,29 @@ def AdminLogin(request):
         username = request.POST['login_id']
         pswd = request.POST['password']
         if username == 'admin' and pswd == 'admin':
+            request.session['admin_id'] = 'admin'  # Set session
             return redirect('AdminHome') 
         return redirect('AdminLogin')    
     return render(request, 'AdminLogin.html')
 
+def AdminLogout(request):
+    if 'admin_id' in request.session:
+        del request.session['admin_id']
+        messages.success(request, "Logged out successfully")
+    return redirect('AdminLogin')
+
 def AdminHome(request):
+    if 'admin_id' not in request.session: return redirect('AdminLogin')
     return render(request, 'admins/AdminHome.html',{})
 
 def RegisterUsersView(request):
+    if 'admin_id' not in request.session: return redirect('AdminLogin')
     data = UserRegistrationModel.objects.all()
     return render(request,'admins/viewregisterusers.html',{'data':data})
 
 
 def ActivaUsers(request):
+    if 'admin_id' not in request.session: return redirect('AdminLogin')
     if request.method == 'GET':
         id = request.GET.get('uid')
         status = 'activated'

@@ -26,6 +26,7 @@ urlpatterns = [
     path("", mainView.index, name="index"),
     path("index/", mainView.index, name="index"),
     path("AdminLogin/", admins.AdminLogin, name="AdminLogin"),
+    path("AdminLogout/", admins.AdminLogout, name="AdminLogout"),
     path("UserLogin/", mainView.UserLogin, name="UserLogin"),
     path("UserRegisterForm/", mainView.UserRegister, name="UserRegisterForm"),
 

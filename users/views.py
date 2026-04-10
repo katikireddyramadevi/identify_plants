@@ -283,7 +283,8 @@ def prediction(request):
         image_file = request.FILES['image']
         image_path = os.path.join(settings.MEDIA_ROOT, image_file.name)
  
-        # Save uploaded image
+        # Save uploaded image - Ensure directory exists
+        os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
         with open(image_path, 'wb+') as f:
             for chunk in image_file.chunks():
                 f.write(chunk)
@@ -300,10 +301,14 @@ def prediction(request):
         img_array = np.expand_dims(img_array, axis=0)
  
         # Load model via singleton and predict
-        model = get_model()
-        if model is None:
-            return render(request, 'users/prediction.html', {'error': 'Model could not be loaded.'})
-        preds = model.predict(img_array)
+        try:
+            model = get_model()
+            if model is None:
+                return render(request, 'users/prediction.html', {'error': 'Model could not be loaded.'})
+            preds = model.predict(img_array)
+        except Exception as e:
+            print(f"PREDICTION ERROR: {str(e)}")
+            return render(request, 'users/prediction.html', {'error': f'Prediction failed: {str(e)}'})
         predicted_index = np.argmax(preds)
  
         predicted_class = class_labels[str(predicted_index)]

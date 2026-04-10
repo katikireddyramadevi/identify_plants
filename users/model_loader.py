@@ -20,6 +20,8 @@ def get_model():
             _model = tf.keras.models.load_model(model_path)
             print("--- MODEL LOADED SUCCESSFULLY ---")
         except Exception as e:
+            import traceback
             print(f"ERROR LOADING MODEL: {str(e)}")
+            print(traceback.format_exc())
             return None
     return _model
