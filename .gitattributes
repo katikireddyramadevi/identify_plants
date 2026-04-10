@@ -3,3 +3,6 @@
 
 # Force shell scripts to use LF (Unix) line endings.
 *.sh text eol=lf
+
+# Force runtime.txt to use LF so Render reads Python version correctly.
+runtime.txt text eol=lf
