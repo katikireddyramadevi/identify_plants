@@ -6,7 +6,7 @@ set -o errexit
 pip install --upgrade pip
 
 # Install dependencies
-pip install -r requirements.txt
+pip install --no-cache-dir -r requirements.txt
 
 # Collect static files
 python manage.py collectstatic --no-input
