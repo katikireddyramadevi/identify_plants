@@ -2,6 +2,10 @@
 # exit on error
 set -o errexit
 
+# Log versions for debugging
+python --version
+pip --version
+
 # Upgrade pip
 pip install --upgrade pip
 
