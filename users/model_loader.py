@@ -17,7 +17,7 @@ def get_model():
             print(f"ERROR: Model file not found at {model_path}")
             return None
         try:
-            _model = tf.keras.models.load_model(model_path)
+            _model = tf.keras.models.load_model(model_path, compile=False)
             print("--- MODEL LOADED SUCCESSFULLY ---")
         except Exception as e:
             import traceback
