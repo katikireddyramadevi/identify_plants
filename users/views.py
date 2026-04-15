@@ -263,68 +263,94 @@ descriptions = {
  
 def prediction(request):
     import numpy as np
-    import tensorflow as tf
     import json
     from PIL import Image
     import os
     from .model_loader import get_model
     from django.conf import settings
- 
+
     result = None
     description = None
     image_url = None
     predicted_class = None
- 
-    model_path = os.path.join(settings.BASE_DIR, 'models', 'herb_leaf_model.h5')
-    json_path  = os.path.join(settings.BASE_DIR, 'models', 'class_labels.json')
- 
-    if request.method == 'POST' and request.FILES.get('image'):
- 
-        image_file = request.FILES['image']
-        image_path = os.path.join(settings.MEDIA_ROOT, image_file.name)
- 
-        # Save uploaded image - Ensure directory exists
-        os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
-        with open(image_path, 'wb+') as f:
-            for chunk in image_file.chunks():
-                f.write(chunk)
- 
-        # Load class labels from JSON
-        with open(json_path, "r") as f:
-            class_labels = json.load(f)
- 
-        # Preprocess image — same as Colab training
-        img = Image.open(image_path).convert('RGB')
-        img = img.resize((224, 224))
- 
-        img_array = np.array(img) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
- 
-        # Load model via singleton and predict
-        try:
-            model = get_model()
-            if model is None:
-                return render(request, 'users/prediction.html', {'error': 'Model could not be loaded.'})
-            preds = model.predict(img_array)
-        except Exception as e:
-            print(f"PREDICTION ERROR: {str(e)}")
-            return render(request, 'users/prediction.html', {'error': f'Prediction failed: {str(e)}'})
-        predicted_index = np.argmax(preds)
- 
-        predicted_class = class_labels[str(predicted_index)]
- 
-        # Lookup medicinal description
-        description = descriptions.get(
-            predicted_class,
-            "Medicinal information for this plant is not available yet."
-        )
- 
-        result    = predicted_class
-        image_url = f"/media/{image_file.name}"
- 
+    error = None
+    confidence = None
+
+    if request.method == 'POST':
+        print("=" * 50)
+        print("=== PREDICTION POST REQUEST RECEIVED ===")
+
+        if not request.FILES.get('image'):
+            print("ERROR: No image file in request.FILES")
+            print(f"request.FILES keys: {list(request.FILES.keys())}")
+            error = "No image file was uploaded. Please select an image and try again."
+        else:
+            image_file = request.FILES['image']
+            print(f"Image received: {image_file.name}, size: {image_file.size} bytes")
+
+            try:
+                # Save uploaded image
+                image_path = os.path.join(settings.MEDIA_ROOT, image_file.name)
+                os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+                with open(image_path, 'wb+') as f:
+                    for chunk in image_file.chunks():
+                        f.write(chunk)
+                print(f"Image saved to: {image_path}")
+
+                # Load class labels from JSON
+                json_path = os.path.join(settings.BASE_DIR, 'models', 'class_labels.json')
+                if not os.path.exists(json_path):
+                    raise FileNotFoundError(f"class_labels.json not found at {json_path}")
+                with open(json_path, "r") as f:
+                    class_labels = json.load(f)
+                print(f"Class labels loaded: {len(class_labels)} classes")
+
+                # Preprocess image — same as Colab training
+                img = Image.open(image_path).convert('RGB')
+                img = ImageOps.exif_transpose(img) 
+                img = img.resize((224, 224))
+                img_array = np.array(img) / 255.0
+                img_array = np.expand_dims(img_array, axis=0)
+                print(f"Image preprocessed: shape={img_array.shape}")
+
+                # Load model via singleton and predict
+                model = get_model()
+                if model is None:
+                    error = 'Model could not be loaded. Check server logs for details.'
+                    print(f"ERROR: {error}")
+                else:
+                    print("Model loaded, running prediction...")
+                    preds = model.predict(img_array)
+                    predicted_index = int(np.argmax(preds))
+                    confidence = round(float(np.max(preds)) * 100, 2)
+                    print(f"Prediction: index={predicted_index}, confidence={confidence}%")
+
+                    predicted_class = class_labels.get(str(predicted_index), "Unknown")
+                    print(f"Predicted class: {predicted_class}")
+
+                    # Lookup medicinal description
+                    description = descriptions.get(
+                        predicted_class,
+                        "Medicinal information for this plant is not available yet."
+                    )
+
+                    result = predicted_class
+                    image_url = f"/media/{image_file.name}"
+                    print(f"=== PREDICTION COMPLETE: {result} ({confidence}%) ===")
+
+            except Exception as e:
+                import traceback
+                print(f"PREDICTION ERROR: {str(e)}")
+                print(traceback.format_exc())
+                error = f'Prediction failed: {str(e)}'
+
+        print("=" * 50)
+
     return render(request, 'users/prediction.html', {
         'result':          result,
         'predicted_class': predicted_class,
         'description':     description,
         'image_url':       image_url,
+        'error':           error,
+        'confidence':      confidence,
     })
